@@ -1,0 +1,474 @@
+{% extends 'base.html' %} {% block head %}
+
+<title>UTP Cable Crimping Simulation | RiddleNet</title>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/crimping-simulation.css') }}"
+/>
+<link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}" />
+
+{% endblock %} {% block body %}
+<div class="container">
+  <h1>UTP Cable Crimping Simulation</h1>
+
+<!-- Game Start Modal -->
+<div id="startGameModal" class="modal">
+  <div class="modal-content">
+    <p>Are you ready to start the UTP Cable Crimping Simulation?</p>
+    <button onclick="startGame()">Start Game</button>
+  </div>
+</div>
+
+<!-- Existing Game Over Modal -->
+<div id="resultModal" class="modal">
+  <div class="modal-content">
+    <p id="modalMessage">Game Over! Time's up.</p>
+    <button class="close-modal" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+  <!-- Wiring Type Selection -->
+  <div class="wiring-type">
+    <label for="wiring-select">Select Wiring Type:</label>
+    <select id="wiring-select">
+      <option value="straightthrough">Straight-Through (T568B)</option>
+      <option value="crossover">Crossover (T568A to T568B)</option>
+    </select>
+
+    
+  <!-- Timer Display -->
+  <div id="timer">Time Left: <span id="time-left"></span> seconds</div>
+  </div>
+
+  <!-- UTP Cable (End A) -->
+  <div class="cable">
+    <h2>Arrange Wires for End A</h2>
+    <div class="wires" id="endA-wires">
+      <div
+        class="wire"
+        id="orange-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        Orange
+      </div>
+      <div
+        class="wire"
+        id="white-orange-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Orange
+      </div>
+      <div class="wire" id="green-A" draggable="true" ondragstart="drag(event)">
+        Green
+      </div>
+      <div
+        class="wire"
+        id="white-blue-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Blue
+      </div>
+      <div class="wire" id="blue-A" draggable="true" ondragstart="drag(event)">
+        Blue
+      </div>
+      <div
+        class="wire"
+        id="white-green-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Green
+      </div>
+      <div class="wire" id="brown-A" draggable="true" ondragstart="drag(event)">
+        Brown
+      </div>
+      <div
+        class="wire"
+        id="white-brown-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Brown
+      </div>
+    </div>
+  </div>
+
+  <!-- RJ-45 Connector (End A) -->
+  <div class="rj45-connector">
+    <h2>Drop the Wires for End A Here</h2>
+    <div class="wire-slots" id="endA">
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="0"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="1"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="2"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="3"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="4"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="5"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="6"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="7"
+      ></div>
+    </div>
+  </div>
+
+  <!-- UTP Cable (End B) -->
+  <div class="cable">
+    <h2>Arrange Wires for End B</h2>
+    <div class="wires" id="endB-wires">
+      <div
+        class="wire"
+        id="orange-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        Orange
+      </div>
+      <div
+        class="wire"
+        id="white-orange-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Orange
+      </div>
+      <div class="wire" id="green-B" draggable="true" ondragstart="drag(event)">
+        Green
+      </div>
+      <div
+        class="wire"
+        id="white-blue-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Blue
+      </div>
+      <div class="wire" id="blue-B" draggable="true" ondragstart="drag(event)">
+        Blue
+      </div>
+      <div
+        class="wire"
+        id="white-green-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Green
+      </div>
+      <div class="wire" id="brown-B" draggable="true" ondragstart="drag(event)">
+        Brown
+      </div>
+      <div
+        class="wire"
+        id="white-brown-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Brown
+      </div>
+    </div>
+  </div>
+
+  <!-- RJ-45 Connector (End B) -->
+  <div class="rj45-connector">
+    <h2>Drop the Wires for End B Here</h2>
+    <div class="wire-slots" id="endB">
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="0"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="1"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="2"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="3"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="4"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="5"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="6"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="7"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Crimping Button -->
+  <div class="action-buttons">
+    <button onclick="checkWiring()">Crimp the Cable</button>
+  </div>
+
+  <div class="lowered-button">
+    <button onclick="resetSimulation()">Try Again</button>
+    <button onclick="goToHome()">Go to Home</button>
+  </div>
+
+
+</div>
+
+ 
+<script>
+
+let timeLeft = 1;
+let timer; 
+
+window.onload = function() {
+    document.getElementById("startGameModal").style.display = "flex"; // Show start game popup
+};
+
+function startGame() {
+    document.getElementById("startGameModal").style.display = "none";
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(timer); // Clear any existing timer
+    timer = setInterval(function() {
+        timeLeft--;
+        document.getElementById("time-left").innerText = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            showModal("Game Over! Time's up.");
+            disableInteractions();
+        }
+    }, 1000);
+}
+
+function resetSimulation() {
+startTimer();
+}
+
+function showModal(message) {
+    document.getElementById("modalMessage").innerText = message;
+    document.getElementById("resultModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("resultModal").style.display = "none";
+}
+
+function disableInteractions() {
+    // Disable all buttons by class instead of by ID to match button setup in HTML
+    document.querySelector(".action-buttons button").disabled = true;
+    document.querySelector(".lowered-button button").disabled = true;
+
+    // Disable drag and drop functionality
+    const wires = document.querySelectorAll(".wire");
+    wires.forEach(wire => {
+        wire.setAttribute("draggable", "false");
+    });
+
+    const slots = document.querySelectorAll(".wire-slot");
+    slots.forEach(slot => {
+        slot.removeAttribute("ondrop");
+        slot.removeAttribute("ondragover");
+    });
+}
+
+function enableInteractions() {
+    // Enable all buttons
+    document.querySelector(".action-buttons button").disabled = false;
+    document.querySelector(".lowered-button button").disabled = false;
+
+    // Enable drag and drop functionality
+    const wires = document.querySelectorAll(".wire");
+    wires.forEach(wire => {
+        wire.setAttribute("draggable", "true");
+    });
+
+    const slots = document.querySelectorAll(".wire-slot");
+    slots.forEach(slot => {
+        slot.setAttribute("ondrop", "drop(event)");
+        slot.setAttribute("ondragover", "allowDrop(event)");
+    });
+}
+
+  // Allow drop
+  function allowDrop(ev) {
+    ev.preventDefault();
+  }
+
+  function goToHome() {
+    window.location.href = "{{ url_for('dashboard') }}";
+  }
+
+  // Handle drag
+  function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+    ev.target.classList.add("dragging");
+  }
+
+  // Handle drop
+  function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    const targetSlot = ev.target;
+
+    // Only allow one wire per slot, and only if the slot is empty
+    if (
+      targetSlot.classList.contains("wire-slot") &&
+      targetSlot.children.length === 0
+    ) {
+      targetSlot.appendChild(document.getElementById(data));
+    }
+  }
+
+  // Handle the end of drag (to reset the wire if not placed in a valid slot)
+  function dragEnd(ev) {
+    const wire = ev.target;
+
+    // If the wire is not in a valid slot, move it back to its original area
+    if (!wire.parentElement.classList.contains("wire-slot")) {
+      const wireId = wire.id.includes("-A") ? "endA-wires" : "endB-wires";
+      document.getElementById(wireId).appendChild(wire);
+    }
+  }
+
+  // Attach the dragend event to each wire
+  document.querySelectorAll(".wire").forEach((wire) => {
+    wire.addEventListener("dragend", dragEnd);
+  });
+
+  // Check wiring order based on selected wiring type
+  function checkWiring() {
+    const wiringType = document.getElementById("wiring-select").value;
+
+    // T568A standard (used for one end of a crossover)
+    const t568AOrder = [
+      "white-green",
+      "green",
+      "white-orange",
+      "blue",
+      "white-blue",
+      "orange",
+      "white-brown",
+      "brown",
+    ];
+
+    // T568B standard (used for straight-through)
+    const t568BOrder = [
+      "white-orange",
+      "orange",
+      "white-green",
+      "blue",
+      "white-blue",
+      "green",
+      "white-brown",
+      "brown",
+    ];
+
+    // Correct wiring for each end
+    let correctEndA = [];
+    let correctEndB = [];
+
+    if (wiringType === "straightthrough") {
+      correctEndA = t568BOrder; // Both ends are T568B
+      correctEndB = t568BOrder;
+    } else if (wiringType === "crossover") {
+      correctEndA = t568AOrder; // End A is T568A, End B is T568B
+      correctEndB = t568BOrder;
+    }
+
+    // Get user wiring for End A
+    let userOrderEndA = [];
+    const slotsEndA = document.querySelectorAll("#endA .wire-slot");
+    slotsEndA.forEach((slot) => {
+      if (slot.children.length > 0) {
+        userOrderEndA.push(slot.children[0].id.replace("-A", ""));
+      }
+    });
+
+    // Get user wiring for End B
+    let userOrderEndB = [];
+    const slotsEndB = document.querySelectorAll("#endB .wire-slot");
+    slotsEndB.forEach((slot) => {
+      if (slot.children.length > 0) {
+        userOrderEndB.push(slot.children[0].id.replace("-B", ""));
+      }
+    });
+
+    // Validate wiring for both ends
+    if (
+      JSON.stringify(userOrderEndA) === JSON.stringify(correctEndA) &&
+      JSON.stringify(userOrderEndB) === JSON.stringify(correctEndB)
+    ) {
+      document.getElementById("result").innerText =
+        "Wiring is correct! You can crimp the cable.";
+    } else {
+      document.getElementById("result").innerText =
+        "Wiring is incorrect. Please try again.";
+    }
+  }
+
+
+</script>
+{% endblock %}

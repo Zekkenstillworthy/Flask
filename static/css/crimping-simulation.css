@@ -1,0 +1,268 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif; /* Change font-family to Poppins */
+}
+
+body {
+    background-color: #09001d ;
+    background-size: cover;
+    height: 100vh;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden; 
+  }
+
+.container {
+    width: 80%;
+    max-width: 1200px;
+    background: #09001d;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border: 2px solid #00C3B5;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 32px; /* Slightly larger for better visibility */
+    background: linear-gradient(45deg, transparent, #00C3B5, transparent);
+     color: #fff;
+ }
+
+ h2{
+     margin-bottom: 20px;
+    font-size: 32px; /* Slightly larger for better visibility */
+     color: #fff;
+ }
+.wiring-type {
+    margin-bottom: 20px;
+    justify-content: center; /* Center the select box */
+ align-items: center;
+ gap: 10px; /* Adds spacing between label and select */
+}
+
+.wiring-type label {
+    font-size: 18px;
+    margin-right: 10px;
+    background: linear-gradient(45deg, transparent, #00C3B5, transparent);  /* Added gradient background */
+ color: #fff; /* Changed label text color to white */
+ padding: 5px 10px; /* Added padding to match select box style */
+ border: 2px solid #00C3B5; /* Added border to match select */
+ border-radius: 5px; /* Add slight rounding */
+}
+
+.wiring-type select {
+    padding: 5px;
+    font-size: 16px;
+    border: 2px solid #00C3B5;  /* Added border to match h1 */
+     background: linear-gradient(45deg, transparent, #00C3B5, transparent);  /* Added gradient background */
+     color: #fff; /* Changed text color to white */
+     align-items: center;
+}
+
+.wiring-type select option {
+ background-color: #09001d;  /* Dark background for the options */
+ color: #fff;  /* White text color for better contrast */
+ padding: 10px;  /* Add padding for spacing */
+ border: none;  /* Remove borders */
+}
+.cable, .rj45-connector {
+    margin: 20px 0;
+}
+
+.wires {
+    display: flex;
+    justify-content: center;
+    gap: 5px;  /* Reduced gap to fit the wires neatly */
+    margin-bottom: 20px;
+}
+
+.wire {
+    width: 60px;  /* Reduced width to make all wires fit */
+    height: 30px;  /* Same height as the slots for uniformity */
+    background-color: #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: grab;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    border: 2px solid #00C3B5; /* Added solid teal border */
+
+}
+
+.wire:hover {
+    background-color: #ccc;
+}
+
+.rj45-connector {
+    text-align: center;
+}
+
+.wire-slots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;  /* Reduced gap to match the wires */
+    margin-bottom: 20px;
+}
+
+.wire-slot {
+    width: 60px;  /* Matches the wire width */
+    height: 30px;
+    background-color: #e6e6e6;
+    border: 2px dashed #00C3B5; /* Changed to dashed teal border */
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.wire-slot:hover {
+    background-color: #d9d9d9;
+}
+
+.action-buttons {
+    margin-top: 20px;
+}
+
+button {
+ width: 130px;
+ height: 47px;
+ background: #00C3B5;
+ border: 2px solid #00C3B5;
+ outline: none;
+ border-radius: 6px;
+ font-size: 16px;
+ color: #fff;
+ font-weight: 600;
+ margin: 0 20px 20px;
+ cursor: pointer;
+ transition: 0.5s;
+}
+
+/* Hover effect for the first button (Crimp the Cable) */
+button:nth-child(1):hover {
+ background: #00645C;
+ border-color: #00645C;
+}
+
+/* Transparent background and text color for the second button (Try Again) */
+button:nth-child(2) {
+ background: transparent;
+ color: #00C3B5;
+}
+
+/* Hover effect for the third button */
+button:nth-child(2):hover {
+ background: #00C3B5;
+ color: #fff;
+}
+
+button:nth-child(3) {
+ background: transparent;
+ color: #00C3B5;
+}
+
+/* Hover effect for the third button */
+button:nth-child(3):hover {
+ background: #00C3B5;
+ color: #fff;
+}
+.result {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #007BFF;
+}
+
+/* Color for each wire */
+#orange-A, #orange-B {
+    background-color: orange;
+}
+
+#white-orange-A, #white-orange-B {
+    background-color: #ffcc99; /* Light orange for white-orange */
+}
+
+#green-A, #green-B {
+    background-color: green;
+}
+
+#white-green-A, #white-green-B {
+    background-color: #99ff99; /* Light green for white-green */
+}
+
+#blue-A, #blue-B {
+    background-color: blue;
+}
+
+#white-blue-A, #white-blue-B {
+    background-color: #99ccff; /* Light blue for white-blue */
+}
+
+#brown-A, #brown-B {
+    background-color: brown;
+}
+
+#white-brown-A, #white-brown-B {
+    background-color: #d2b48c; /* Light brown for white-brown */
+}
+
+
+#timer {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff0000; /* Red color for urgency */
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    padding: 10px;
+    border-radius: 5px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000; /* Ensure it stays on top */
+    text-align: center;
+}
+
+ /* Modal styling */
+ .modal {
+    display: none;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+
+  .modal-content {
+    background-color: #09001d;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px #00C3B5 solid ;
+    width: 300px;
+    text-align: center;
+  }
+
+  .close-modal button{
+    margin-bottom: 1000px;
+    padding: 1000px;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }

@@ -1,0 +1,702 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Network Topology | RiddleNet</title>
+<!-- Include Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+       body {
+        background-color: #09001d;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    #app {
+        display: flex;
+        background-color: #00645C;
+        color: #fff;
+        height: 100vh;
+    }
+
+    #device-palette {
+    position: relative;  
+    width: 160px;
+    padding: 10px;
+    background-color: #09001d;
+    border-right: 2px solid #00C3B5;
+    color: #fff;
+    text-align: center;
+}
+
+    #canvas-container {
+        flex-grow: 1;
+        position: relative;
+        background-color: #09001d;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #Canvas {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #555;
+    }
+
+    #config-panel {
+        width: 240px;
+        padding: 10px;
+        background-color: #09001d;
+        border-left: 2px solid #1b1e21;
+        color: #fff;
+    }
+
+    .device {
+        padding: 8px;
+        background-color: #00C3B5;
+        margin: 5px 0;
+        cursor: pointer;
+        text-align: center;
+        border: 1px solid #777;
+        border-radius: 4px;
+    }
+
+    .device:hover {
+        background-color: #00645C;
+    }
+
+    .action-btn {
+        margin-top: 10px;
+        padding: 8px;
+        background-color: #00C3B5;
+        cursor: pointer;
+        border: none;
+        color: #fff;
+        text-align: center;
+        border-radius: 4px;
+    }
+
+    .action-btn:hover {
+        background-color: #00645C;
+    }
+
+    #connection-mode-btn.active {
+        background-color: #00645C;
+    }
+
+    h3 {
+        color: #fff;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    input[type="text"],
+    select {
+        width: 100%;
+        padding: 6px;
+        margin: 8px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #444b52;
+        color: #fff;
+    }
+
+    button {
+        padding: 8px;
+        background-color: #00C3B5;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #00645C;
+    }
+
+    #selected-device-label {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    #Canvas {
+        border: 2px solid #555;
+        background-color: #09001d;
+    }
+
+    .packet {
+        color: red;
+    }
+
+    .terminal-window {
+        position: fixed;
+        top: 100px;
+        left: 100px;
+        width: 400px;
+        height: 300px;
+        background-color: #333;
+        color: white;
+        padding: 10px;
+        border: 1px solid #000;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .terminal-window textarea {
+        flex-grow: 1;
+        background: #000;
+        color: #0f0;
+        border: none;
+        margin-bottom: 10px;
+    }
+
+    .terminal-window input {
+        width: 100%;
+        background: #222;
+        color: #0f0;
+        border: none;
+        padding: 5px;
+    }
+
+    .terminal-window button {
+        background-color: #ff0000;
+        border: none;
+        color: #fff;
+        padding: 4px;
+        cursor: pointer;
+        align-self: flex-end;
+    }
+
+    canvas {
+        cursor: pointer;
+    }
+
+    #config-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #00645C;
+        color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        z-index: 1000;
+        width: 300px;
+    }
+</style>
+<link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}">
+
+</head>
+
+<body>
+    <div id="app">
+        
+        <!-- Device Palette -->
+        <div id="device-palette">
+            <h3>Select Topology</h3>
+                <select id="topology-select">
+                    <option value="point-to-point">Point-to-Point Topology</option>
+                    <option value="mesh">Mesh Topology</option>
+                    <option value="star">Star Topology</option>
+                    <option value="bus">Bus Topology</option>
+                    <option value="ring">Ring Topology</option>
+                    <option value="tree">Tree Topology</option>
+                    <option value="hybrid">Hybrid Topology</option>
+                </select>
+                <!-- Button to check the user's created topology -->
+                <div class="action-btn" id="check-topology-btn">Check Topology</div>
+            <h3>Devices</h3>
+            <div class="device" draggable="true" data-type="router">Router</div>
+            <div class="device" draggable="true" data-type="switch">Switch</div>
+            <div class="device" draggable="true" data-type="pc">End Device</div>
+
+            <!-- Buttons Section -->
+            <div style="margin-top: 20px;">
+                <h3>Actions</h3>
+                <div id="connection-mode-btn" class="action-btn">Connection Mode</div>
+                <div id="delete-connection-btn" class="action-btn">Delete Connection</div>
+                <div id="delete-device-btn" class="action-btn">Delete Device</div>
+                <div class="action-btn" onclick="goToHome()">Go to Home</div>
+                
+            </div>
+        </div>
+
+        <!-- Main Canvas -->
+        <div id="canvas-container">
+            <canvas 
+            id="Canvas" 
+            style="
+            width: 98%;
+            height: 97%;
+            border: 5px solid #00C3B5;
+            "></canvas>
+        </div>
+
+        <!-- Configuration Modal -->
+        <div id="config-modal">
+            <h3>Device Configuration</h3>
+            <p id="modal-device-label">No device selected</p>
+            <form id="modal-device-config-form">
+                <label for="modal-device-ipv4">IPv4 Address:</label>
+                <input type="text" id="modal-device-ipv4" name="ipv4"><br>
+                <label for="modal-device-ipv6">IPv6 Address:</label>
+                <input type="text" id="modal-device-ipv6" name="ipv6"><br>
+                <label for="modal-subnet-mask">Subnet Mask:</label>
+                <input type="text" id="modal-subnet-mask" name="subnet"><br>
+                <label for="modal-routing-protocol">Routing Protocol:</label>
+                <select id="modal-routing-protocol" name="protocol">
+                    <option value="none">None</option>
+                    <option value="ospf">OSPF</option>
+                    <option value="rip">RIP</option>
+                    <option value="eigrp">EIGRP</option>
+                </select><br>
+                <button type="submit">Save</button>
+            </form>
+            <button id="close-modal-btn">Close</button>
+        </div>
+    </div>
+
+    <script>
+
+    const palette = document.getElementById("device-palette");
+    const canvas = document.getElementById("Canvas");
+    const ctx = canvas.getContext("2d");
+
+    let selectedDevice = null;
+    let devices = [];
+    let connections = [];
+    let isConnectionMode = false;
+    let firstDevice = null;
+
+    let isDragging = false;
+    let draggedDevice = null;
+    
+function goToHome() {
+        window.location.href = "{{ url_for('dashboard') }}";
+    }
+
+    class Device {
+        constructor(type, x, y, label) {
+            this.type = type;
+            this.x = x;
+            this.y = y;
+            this.label = label;
+            this.ipv4 = '';
+            this.ipv6 = '';
+            this.subnet = '';
+            this.protocol = 'none';
+        }
+
+        draw(ctx) {
+            ctx.beginPath();
+            switch (this.type) {
+                case 'pc':
+                    this.drawPC(ctx);
+                    break;
+                case 'router':
+                    this.drawRouter(ctx);
+                    break;
+                case 'switch':
+                    this.drawSwitch(ctx);
+                    break;
+            }
+            ctx.fillStyle = "#00C3B5";
+            ctx.fill();
+            ctx.strokeStyle = "#000";
+            ctx.stroke();
+
+            // Draw device label below
+            ctx.fillStyle = "#fff";
+            ctx.font = "14px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(this.label, this.x, this.y + 35);
+        }
+
+        drawPC(ctx) {
+            ctx.rect(this.x - 20, this.y - 20, 40, 40);
+        }
+
+        drawRouter(ctx) {
+            ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+        }
+
+        drawSwitch(ctx) {
+            ctx.rect(this.x - 30, this.y - 15, 60, 30);
+        }
+    }
+
+    class PC extends Device {
+        constructor(x, y, label) {
+            super('pc', x, y, label);
+        }
+    }
+
+    class Router extends Device {
+        constructor(x, y, label) {
+            super('router', x, y, label);
+        }
+    }
+
+    class Switch extends Device {
+        constructor(x, y, label) {
+            super('switch', x, y, label);
+        }
+    }
+
+
+    // Adjust canvas size
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+
+    // Add event listeners for draggable devices
+    const deviceElements = document.querySelectorAll(".device");
+    deviceElements.forEach(el => {
+        el.addEventListener("dragstart", handleDragStart);
+    });
+
+    const correctTopologies = {
+    "point-to-point": (devices, connections) => {
+        return devices.length === 2 && connections.length === 1;
+    },
+    "mesh": (devices, connections) => {
+    // Create a map to store the connections for each device
+    const connectionMap = {};
+
+    // Initialize the connection map for each device
+    devices.forEach(device => {
+        connectionMap[device.label] = new Set();
+    });
+
+    // Populate the connection map
+    connections.forEach(connection => {
+        const device1 = connection.device1.label;
+        const device2 = connection.device2.label;
+
+        // Add the devices to each other's set
+        connectionMap[device1].add(device2);
+        connectionMap[device2].add(device1);
+    });
+
+    // Check if each device is connected to all other devices
+    for (let device of devices) {
+        if (connectionMap[device.label].size !== devices.length - 1) {
+            return false;  // Device is not connected to all other devices
+        }
+    }
+
+    return true;  // All devices are connected to each other
+}
+,
+    "star": (devices, connections) => {
+        if (devices.length < 3) return false; // Minimum 3 devices for a star
+        const centralDevice = connections.reduce((map, conn) => {
+            map[conn.device1.label] = (map[conn.device1.label] || 0) + 1;
+            map[conn.device2.label] = (map[conn.device2.label] || 0) + 1;
+            return map;
+        }, {});
+        const center = Object.values(centralDevice).filter(val => val === devices.length - 1).length === 1;
+        return center && connections.length === devices.length - 1;
+    },
+    "bus": (devices, connections) => {
+        return connections.length === devices.length - 1;
+    },
+    "ring": (devices, connections) => {
+        return devices.length > 2 && connections.length === devices.length;
+    },
+    "tree": (devices, connections) => {
+        const deviceConnections = devices.reduce((map, device) => {
+            map[device.label] = 0;
+            return map;
+        }, {});
+        connections.forEach(conn => {
+            deviceConnections[conn.device1.label]++;
+            deviceConnections[conn.device2.label]++;
+        });
+        const root = Object.values(deviceConnections).filter(val => val > 1).length >= 1;
+        return root && connections.length === devices.length - 1;
+    },
+    "hybrid": (devices, connections) => {
+        return connections.length >= devices.length - 1;
+    }
+};
+
+    function handleDragStart(e) {
+        e.dataTransfer.setData("type", e.target.getAttribute("data-type"));
+    }
+
+    // Handle drag over the canvas
+    canvas.addEventListener("dragover", (e) => e.preventDefault());
+
+    // Handle drop on canvas
+canvas.addEventListener("drop", (e) => {
+    const type = e.dataTransfer.getData("type");
+    const x = e.offsetX;
+    const y = e.offsetY;
+
+    addDevice(type, x, y);
+    redrawCanvas();
+});
+
+    // Add device to the canvas
+    function addDevice(type, x, y) {
+    let newDevice;
+    const label = `${type.charAt(0).toUpperCase() + type.slice(1)} ${devices.length + 1}`;
+
+    switch (type) {
+        case 'pc':
+            newDevice = new PC(x, y, label);
+            break;
+        case 'router':
+            newDevice = new Router(x, y, label);
+            break;
+        case 'switch':
+            newDevice = new Switch(x, y, label);
+            break;
+        default:
+            return; // If no valid type is passed, don't add a device
+    }
+
+    devices.push(newDevice);
+    selectedDevice = newDevice;
+    redrawCanvas();
+}
+
+
+    // Toggle connection mode
+    document.getElementById("connection-mode-btn").addEventListener("click", () => {
+        isConnectionMode = !isConnectionMode;
+        document.getElementById("connection-mode-btn").classList.toggle("active", isConnectionMode);
+    });
+
+    // Handle canvas click for device selection and connection mode
+    canvas.addEventListener("click", (e) => {
+        const clickedDevice = findDeviceByPosition(e.offsetX, e.offsetY);
+        if (isConnectionMode) {
+            if (clickedDevice) {
+                if (!firstDevice) {
+                    firstDevice = clickedDevice;  // Select the first device
+                } else {
+                    addConnection(firstDevice, clickedDevice);  // Connect first and second device
+                    firstDevice = null;  // Reset after connecting
+                }
+            }
+        } else if (clickedDevice) {
+            selectedDevice = clickedDevice;
+            openConfigModal(clickedDevice);
+        } else {
+            selectedDevice = null;
+        }
+    });
+
+    
+    document.getElementById("check-topology-btn").addEventListener("click", () => {
+    const selectedTopology = document.getElementById("topology-select").value;
+    const isCorrect = correctTopologies[selectedTopology](devices, connections);
+    
+    if (isCorrect) {
+        alert("Correct topology!");
+    } else {
+        alert("Incorrect topology. Please try again.");
+    }
+});
+
+    // Find device by position
+    function findDeviceByPosition(x, y) {
+        return devices.find(device => {
+            const dx = x - device.x;
+            const dy = y - device.y;
+            return dx * dx + dy * dy <= 400;  // 20px radius for device selection
+        });
+    }
+
+    // Redraw canvas with devices and connections
+    function redrawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        connections.forEach(connection => drawConnection(connection));
+        devices.forEach(device => drawDevice(device));
+    }
+
+    // Draw connection line between devices
+    function drawConnection(connection) {
+        ctx.beginPath();
+        ctx.moveTo(connection.device1.x, connection.device1.y);
+        ctx.lineTo(connection.device2.x, connection.device2.y);
+        ctx.strokeStyle = "#43b581";  
+        ctx.lineWidth = 4;
+        ctx.stroke();
+    }
+
+    // Draw device on the canvas
+    // Draw device on the canvas
+function drawDevice(device) {
+    ctx.beginPath();
+    if (device.type === "pc") {
+        // Draw square for PC
+        ctx.rect(device.x - 20, device.y - 20, 40, 40);
+    } else if (device.type === "switch") {
+        // Draw rectangle for Switch
+        ctx.rect(device.x - 30, device.y - 15, 60, 30);
+    } else {
+        // Default circle for other devices
+        ctx.arc(device.x, device.y, 20, 0, Math.PI * 2);
+    }
+    
+    ctx.fillStyle = "#00C3B5";  // Device color
+    ctx.fill();
+    ctx.strokeStyle = "#000";  // Border color
+    ctx.stroke();
+
+    // Set text properties for device label
+    ctx.fillStyle = "#fff";  // Text color
+    ctx.font = "14px Arial";  // Text font and size
+    ctx.textAlign = "center";  // Center the text
+    ctx.fillText(device.label, device.x, device.y + 35);  // Display label below the device
+}
+
+    // Open configuration modal for a device
+    function openConfigModal(device) {
+        const modal = document.getElementById("config-modal");
+        document.getElementById("modal-device-label").innerText = device.label;
+        document.getElementById("modal-device-ipv4").value = device.ipv4;
+        document.getElementById("modal-device-ipv6").value = device.ipv6;
+        document.getElementById("modal-subnet-mask").value = device.subnet;
+        document.getElementById("modal-routing-protocol").value = device.protocol;
+        modal.style.display = "block";
+    }
+
+    // Close configuration modal
+    document.getElementById("close-modal-btn").addEventListener("click", () => {
+        document.getElementById("config-modal").style.display = "none";
+    });
+
+    // Save device configuration from the modal
+    document.getElementById("modal-device-config-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const device = selectedDevice;
+        device.ipv4 = document.getElementById("modal-device-ipv4").value;
+        device.ipv6 = document.getElementById("modal-device-ipv6").value;
+        device.subnet = document.getElementById("modal-subnet-mask").value;
+        device.protocol = document.getElementById("modal-routing-protocol").value;
+
+        document.getElementById("config-modal").style.display = "none";
+    });
+
+    // Add connection between devices
+    function addConnection(device1, device2) {
+        const existingConnection = connections.find(conn =>
+            (conn.device1 === device1 && conn.device2 === device2) ||
+            (conn.device1 === device2 && conn.device2 === device1)
+        );
+
+        if (!existingConnection) {
+            connections.push({ device1, device2 });
+            redrawCanvas();
+        }
+        firstDevice = null;  // Reset after connection
+    }
+
+    // Find connection by position for deletion
+    function findConnectionByPosition(x, y) {
+    return connections.find(connection => {
+        const { device1, device2 } = connection;
+        const distanceToLine = pointToLineDistance(x, y, device1.x, device1.y, device2.x, device2.y);
+        return distanceToLine < 10;  // Adjusted threshold for clicking accuracy (was 5)
+    });
+}
+
+    // Helper function to calculate distance from a point to a line
+    function pointToLineDistance(px, py, x1, y1, x2, y2) {
+        const A = px - x1;
+        const B = py - y1;
+        const C = x2 - x1;
+        const D = y2 - y1;
+
+        const dot = A * C + B * D;
+        const lenSq = C * C + D * D;
+        const param = lenSq !== 0 ? dot / lenSq : -1;
+
+        let xx, yy;
+
+        if (param < 0) {
+            xx = x1;
+            yy = y1;
+        } else if (param > 1) {
+            xx = x2;
+            yy = y2;
+        } else {
+            xx = x1 + param * C;
+            yy = y1 + param * D;
+        }
+
+        const dx = px - xx;
+        const dy = py - yy;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // Handle delete connection button
+    document.getElementById("delete-connection-btn").addEventListener("click", () => {
+        canvas.addEventListener("click", function deleteConnection(e) {
+            const clickedConnection = findConnectionByPosition(e.offsetX, e.offsetY);
+            if (clickedConnection) {
+                // Remove the clicked connection from the connections array
+                connections = connections.filter(conn => conn !== clickedConnection);
+                redrawCanvas();  // Redraw canvas after deleting the connection
+                alert("Connection deleted!");
+            } else {
+                alert("No connection clicked to delete.");
+            }
+            canvas.removeEventListener("click", deleteConnection);
+        });
+    });
+
+    // Handle dragging devices
+canvas.addEventListener("mousedown", (e) => {
+    if (isConnectionMode) return; // Prevent dragging in connection mode
+    const clickedDevice = findDeviceByPosition(e.offsetX, e.offsetY);
+    if (clickedDevice) {
+        isDragging = true;
+        draggedDevice = clickedDevice;
+    }
+});
+
+    canvas.addEventListener("mousemove", (e) => {
+        if (isDragging && draggedDevice) {
+            draggedDevice.x = e.offsetX;
+            draggedDevice.y = e.offsetY;
+            redrawCanvas(); // Redraw the canvas to show the updated position
+        }
+    });
+
+    canvas.addEventListener("mouseup", () => {
+        isDragging = false;
+        draggedDevice = null;
+    });
+
+    // Handle delete device button
+    document.getElementById("delete-device-btn").addEventListener("click", () => {
+        if (selectedDevice) {
+            // Remove the selected device from the devices array
+            devices = devices.filter(device => device !== selectedDevice);
+
+            // Also remove any associated connections
+            connections = connections.filter(connection =>
+                connection.device1 !== selectedDevice && connection.device2 !== selectedDevice
+            );
+
+            selectedDevice = null;  // Clear selection
+            redrawCanvas();  // Redraw canvas after deletion
+        } else {
+            alert("No device selected to delete.");
+        }
+    });
+</script>
+
+</body>
+{% endblock %}
