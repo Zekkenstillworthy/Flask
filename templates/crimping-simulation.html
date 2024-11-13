@@ -11,13 +11,7 @@
 <div class="container">
   <h1>UTP Cable Crimping Simulation</h1>
 
-<!-- Game Start Modal -->
-<div id="startGameModal" class="modal">
-  <div class="modal-content">
-    <p>Are you ready to start the UTP Cable Crimping Simulation?</p>
-    <button onclick="startGame()">Start Game</button>
-  </div>
-</div>
+
 
 <!-- Existing Game Over Modal -->
 <div id="resultModal" class="modal">
@@ -36,9 +30,7 @@
     </select>
 
     
-  <!-- Timer Display -->
-  <div id="timer">Time Left: <span id="time-left"></span> seconds</div>
-  </div>
+
 
   <!-- UTP Cable (End A) -->
   <div class="cable">
@@ -278,34 +270,10 @@
  
 <script>
 
-let timeLeft = 1;
-let timer; 
-
 window.onload = function() {
     document.getElementById("startGameModal").style.display = "flex"; // Show start game popup
 };
 
-function startGame() {
-    document.getElementById("startGameModal").style.display = "none";
-    startTimer();
-}
-
-function startTimer() {
-    clearInterval(timer); // Clear any existing timer
-    timer = setInterval(function() {
-        timeLeft--;
-        document.getElementById("time-left").innerText = timeLeft;
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            showModal("Game Over! Time's up.");
-            disableInteractions();
-        }
-    }, 1000);
-}
-
-function resetSimulation() {
-startTimer();
-}
 
 function showModal(message) {
     document.getElementById("modalMessage").innerText = message;
@@ -356,6 +324,32 @@ function enableInteractions() {
   function allowDrop(ev) {
     ev.preventDefault();
   }
+
+  function resetSimulation() {
+    // Clear wire slots for End A
+    const slotsEndA = document.querySelectorAll("#endA .wire-slot");
+    slotsEndA.forEach(slot => {
+        if (slot.children.length > 0) {
+            const wire = slot.children[0];
+            document.getElementById("endA-wires").appendChild(wire);
+        }
+    });
+
+    // Clear wire slots for End B
+    const slotsEndB = document.querySelectorAll("#endB .wire-slot");
+    slotsEndB.forEach(slot => {
+        if (slot.children.length > 0) {
+            const wire = slot.children[0];
+            document.getElementById("endB-wires").appendChild(wire);
+        }
+    });
+
+    // Clear result message
+    document.getElementById("result").innerText = "";
+
+    // Enable interactions
+    enableInteractions();
+}
 
   function goToHome() {
     window.location.href = "{{ url_for('dashboard') }}";
@@ -462,10 +456,10 @@ function enableInteractions() {
       JSON.stringify(userOrderEndB) === JSON.stringify(correctEndB)
     ) {
       document.getElementById("result").innerText =
-        "Wiring is correct! You can crimp the cable.";
+        alert("Wiring is correct! You can crimp the cable.");
     } else {
       document.getElementById("result").innerText =
-        "Wiring is incorrect. Please try again.";
+        alert("Wiring is incorrect. Please try again.");
     }
   }
 

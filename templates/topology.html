@@ -2,11 +2,10 @@
 
 {% block head %}
 <title>Network Topology | RiddleNet</title>
-<!-- Include Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
        body {
-        background-color: #09001d;
+        background-color: #00C3B5;
         margin: 0;
         padding: 0;
         display: flex;
@@ -21,51 +20,37 @@
         height: 100vh;
     }
 
+    h3 {
+        color: #00645C;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
     #device-palette {
     position: relative;  
     width: 160px;
     padding: 10px;
-    background-color: #09001d;
-    border-right: 2px solid #00C3B5;
-    color: #fff;
+    background-color: #00C3B5;
+    border-right: 2px solid #fff;
+    color: #00645C;
     text-align: center;
 }
 
-    #canvas-container {
-        flex-grow: 1;
-        position: relative;
-        background-color: #09001d;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    #Canvas {
-        width: 100%;
-        height: 600px;
-        border: 1px solid #555;
-    }
-
-    #config-panel {
-        width: 240px;
-        padding: 10px;
-        background-color: #09001d;
-        border-left: 2px solid #1b1e21;
-        color: #fff;
-    }
-
-    .device {
+.device {
         padding: 8px;
         background-color: #00C3B5;
         margin: 5px 0;
         cursor: pointer;
         text-align: center;
-        border: 1px solid #777;
+        border: 1px solid #fff;
         border-radius: 4px;
+        color: #fff;
     }
 
     .device:hover {
-        background-color: #00645C;
+        background-color: #fff;
+        color: #00C3B5;
+        border: 1px solid #fff;
     }
 
     .action-btn {
@@ -77,20 +62,19 @@
         color: #fff;
         text-align: center;
         border-radius: 4px;
+        border: 1px solid #fff;
     }
 
     .action-btn:hover {
-        background-color: #00645C;
+        background-color: #fff;
+        color: #00C3B5;
+        border: 1px solid #fff;
     }
 
     #connection-mode-btn.active {
-        background-color: #00645C;
-    }
-
-    h3 {
-        color: #fff;
-        font-size: 1.2em;
-        margin-bottom: 10px;
+        background-color: #fff;
+        color: #00C3B5;
+        border: 1px solid #fff;
     }
 
     input[type="text"],
@@ -98,96 +82,79 @@
         width: 100%;
         padding: 6px;
         margin: 8px 0;
-        border: 1px solid #ccc;
+        border: 1px solid #00C3B5;
         border-radius: 4px;
-        background-color: #444b52;
-        color: #fff;
+        background-color: #fff;
+        color: #00645C;
     }
 
-    button {
-        padding: 8px;
+    
+    #canvas-container {
+        flex-grow: 1;
+        position: relative;
         background-color: #00C3B5;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #00645C;
-    }
-
-    #selected-device-label {
-        font-weight: bold;
-        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     #Canvas {
-        border: 2px solid #555;
-        background-color: #09001d;
-    }
-
-    .packet {
-        color: red;
-    }
-
-    .terminal-window {
-        position: fixed;
-        top: 100px;
-        left: 100px;
-        width: 400px;
-        height: 300px;
-        background-color: #333;
-        color: white;
-        padding: 10px;
-        border: 1px solid #000;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .terminal-window textarea {
-        flex-grow: 1;
-        background: #000;
-        color: #0f0;
-        border: none;
-        margin-bottom: 10px;
-    }
-
-    .terminal-window input {
         width: 100%;
-        background: #222;
-        color: #0f0;
-        border: none;
-        padding: 5px;
+        height: 600px;
+        background-color: #00C3B5;
+    }
+    
+    /* Responsive styles */
+@media (max-width: 768px) {
+    .device {
+        padding: 6px;
+        font-size: 14px;
     }
 
-    .terminal-window button {
-        background-color: #ff0000;
-        border: none;
-        color: #fff;
+    #device-palette {
+        width: 120px;
+        padding: 8px;
+    }
+
+    .action-btn {
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    #canvas-container {
+        padding: 10px;
+    }
+
+    #Canvas {
+        height: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .device {
         padding: 4px;
-        cursor: pointer;
-        align-self: flex-end;
+        font-size: 12px;
     }
 
-    canvas {
-        cursor: pointer;
+    #device-palette {
+        width: 100px;
+        padding: 6px;
     }
 
-    #config-modal {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: #00645C;
-        color: #fff;
-        padding: 20px;
-        border-radius: 5px;
-        z-index: 1000;
-        width: 300px;
+    .action-btn {
+        padding: 4px;
+        font-size: 12px;
     }
+
+    #canvas-container {
+        padding: 8px;
+    }
+
+    #Canvas {
+        height: 300px;
+    }
+}
+       
 </style>
 <link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}">
 
@@ -233,33 +200,10 @@
             style="
             width: 98%;
             height: 97%;
-            border: 5px solid #00C3B5;
+            border: 5px solid #fff;
             "></canvas>
         </div>
 
-        <!-- Configuration Modal -->
-        <div id="config-modal">
-            <h3>Device Configuration</h3>
-            <p id="modal-device-label">No device selected</p>
-            <form id="modal-device-config-form">
-                <label for="modal-device-ipv4">IPv4 Address:</label>
-                <input type="text" id="modal-device-ipv4" name="ipv4"><br>
-                <label for="modal-device-ipv6">IPv6 Address:</label>
-                <input type="text" id="modal-device-ipv6" name="ipv6"><br>
-                <label for="modal-subnet-mask">Subnet Mask:</label>
-                <input type="text" id="modal-subnet-mask" name="subnet"><br>
-                <label for="modal-routing-protocol">Routing Protocol:</label>
-                <select id="modal-routing-protocol" name="protocol">
-                    <option value="none">None</option>
-                    <option value="ospf">OSPF</option>
-                    <option value="rip">RIP</option>
-                    <option value="eigrp">EIGRP</option>
-                </select><br>
-                <button type="submit">Save</button>
-            </form>
-            <button id="close-modal-btn">Close</button>
-        </div>
-    </div>
 
     <script>
 
@@ -487,7 +431,6 @@ canvas.addEventListener("drop", (e) => {
             }
         } else if (clickedDevice) {
             selectedDevice = clickedDevice;
-            openConfigModal(clickedDevice);
         } else {
             selectedDevice = null;
         }
@@ -527,12 +470,11 @@ canvas.addEventListener("drop", (e) => {
         ctx.beginPath();
         ctx.moveTo(connection.device1.x, connection.device1.y);
         ctx.lineTo(connection.device2.x, connection.device2.y);
-        ctx.strokeStyle = "#43b581";  
+        ctx.strokeStyle = "#fff";  
         ctx.lineWidth = 4;
         ctx.stroke();
     }
 
-    // Draw device on the canvas
     // Draw device on the canvas
 function drawDevice(device) {
     ctx.beginPath();
@@ -547,9 +489,9 @@ function drawDevice(device) {
         ctx.arc(device.x, device.y, 20, 0, Math.PI * 2);
     }
     
-    ctx.fillStyle = "#00C3B5";  // Device color
+    ctx.fillStyle = "#fff";  // Device color
     ctx.fill();
-    ctx.strokeStyle = "#000";  // Border color
+    ctx.strokeStyle = "#00C3B5";  // Border color
     ctx.stroke();
 
     // Set text properties for device label
@@ -559,34 +501,9 @@ function drawDevice(device) {
     ctx.fillText(device.label, device.x, device.y + 35);  // Display label below the device
 }
 
-    // Open configuration modal for a device
-    function openConfigModal(device) {
-        const modal = document.getElementById("config-modal");
-        document.getElementById("modal-device-label").innerText = device.label;
-        document.getElementById("modal-device-ipv4").value = device.ipv4;
-        document.getElementById("modal-device-ipv6").value = device.ipv6;
-        document.getElementById("modal-subnet-mask").value = device.subnet;
-        document.getElementById("modal-routing-protocol").value = device.protocol;
-        modal.style.display = "block";
-    }
-
-    // Close configuration modal
-    document.getElementById("close-modal-btn").addEventListener("click", () => {
-        document.getElementById("config-modal").style.display = "none";
-    });
-
-    // Save device configuration from the modal
-    document.getElementById("modal-device-config-form").addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        const device = selectedDevice;
-        device.ipv4 = document.getElementById("modal-device-ipv4").value;
-        device.ipv6 = document.getElementById("modal-device-ipv6").value;
-        device.subnet = document.getElementById("modal-subnet-mask").value;
-        device.protocol = document.getElementById("modal-routing-protocol").value;
-
-        document.getElementById("config-modal").style.display = "none";
-    });
+    
+    
+    
 
     // Add connection between devices
     function addConnection(device1, device2) {
@@ -682,7 +599,7 @@ canvas.addEventListener("mousedown", (e) => {
     // Handle delete device button
     document.getElementById("delete-device-btn").addEventListener("click", () => {
         if (selectedDevice) {
-            // Remove the selected device from the devices array
+
             devices = devices.filter(device => device !== selectedDevice);
 
             // Also remove any associated connections

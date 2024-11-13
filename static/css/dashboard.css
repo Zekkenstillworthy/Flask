@@ -120,7 +120,7 @@ body {
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
   width: 500px;
-  background: #fff;
+  background: #00C3B5;
   border-radius: 6px;
   padding: 10px 25px;
   opacity: 0;
@@ -136,7 +136,7 @@ body {
 
 .popup-info h2 {
   font-size: 50px;
-  color: #00C3B5;
+  color: #fff;
   text-align: center;
 }
 
@@ -147,7 +147,7 @@ body {
   align-items: center;
   margin-top: 20px;
   padding: 15px 0 7px;
-  border-top: 2px solid #00C3B5;
+  border-top: 2px solid #fff;
 }
 
 .choices-btn-group .choice-btn {
@@ -157,12 +157,12 @@ body {
   width: 100%;
   height: 80px;
   background: transparent;
-  border: 2px solid #00C3B5;
+  border: 2px solid #fff;
   outline: none;
   border-radius: 6px;
   text-decoration: none;
   font-size: 20px;
-  color: #00C3B5;
+  color: #fff;
   font-weight: 600;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
@@ -171,9 +171,9 @@ body {
 }
 
 .choices-btn-group .choice-btn:hover {
-  border-color: #00C3B5;
-  color: #fff;
-  background: #00C3B5;
+  border-color: #fff;
+  color: #00C3B5;
+  background: #fff;
 
 }
 
@@ -181,7 +181,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-top: 2px solid #00C3B5;
+  border-top: 2px solid #fff;
   margin-top: 10px;
   padding: 15px 0 7px;
 }
@@ -192,13 +192,13 @@ body {
   align-items: center;
   width: 130px;
   height: 45px;
-  background: #fff;
-  border: 2px solid #fff;
+  background: #00C3B5;
+  border: 2px solid #00C3B5;
   outline: none;
   border-radius: 6px;
   text-decoration: none;
   font-size: 16px;
-  color: #00C3B5;
+  color: #fff;
   font-weight: 600;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
@@ -206,14 +206,14 @@ body {
 }
 
 .popup-info .btn-group .info-btn:nth-child(1) {
-  background: transparent;
-  color: #00C3B5;
-  border-color: #00C3B5;
+  background: #00C3B5;
+  color: #fff;
+  border-color: #fff;
 }
 
 .popup-info .btn-group .info-btn:nth-child(1):hover {
-  background: #00C3B5;
-  color: #fff;
+  background: #fff;
+  color: #00C3B5;
 }
 
 .popup-info .btn-group .info-btn:nth-child(2):hover {

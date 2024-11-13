@@ -1,5 +1,5 @@
 body {
-    background-color: #09001d;
+    background-color: #00C3B5;
     margin: 0;
     padding: 0;
     display: flex;
@@ -9,9 +9,15 @@ body {
 
 #app {
     display: flex;
-    background-color: #00645C;
+    background-color: #00C3B5;
     color: #fff;
     height: 100vh;
+}
+
+h3 {
+    color: #fff;
+    font-size: 1.2em;
+    margin-bottom: 10px;
 }
 
 #problem-select {
@@ -21,25 +27,23 @@ body {
     font-size: 12px;
 }
 
-.action-btn {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.action-btn:hover {
-    background-color: #0056b3;
+input[type="text"],
+select {
+    width: 100%;
+    padding: 6px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #00C3B5;
 }
 
 #device-palette {
 position: relative;
 width: 160px;
 padding: 10px;
-background-color: #09001d;
-border-right: 2px solid #00C3B5;
+background-color: #00C3B5;
+border-right: 2px solid #fff;
 color: #fff;
 text-align: center;
 }
@@ -47,19 +51,10 @@ text-align: center;
 #canvas-container {
     flex-grow: 1;
     position: relative;
-    background-color: #09001d;
+    background-color: #00C3B5;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-
-#config-panel {
-    width: 240px;
-    padding: 10px;
-    background-color: #09001d;
-    border-left: 2px solid #1b1e21;
-    color: #fff;
 }
 
 .device {
@@ -68,12 +63,14 @@ text-align: center;
     margin: 5px 0;
     cursor: pointer;
     text-align: center;
-    border: 1px solid #777;
+    border: 1px solid #fff;
+    color: #fff;
     border-radius: 4px;
 }
 
 .device:hover {
-    background-color: #00645C;
+    background-color: #fff;
+    color: #00C3B5;
 }
 
 .action-btn {
@@ -85,102 +82,23 @@ text-align: center;
     color: #fff;
     text-align: center;
     border-radius: 4px;
+    border: 1px solid #fff;
 }
 
 .action-btn:hover {
-    background-color: #00645C;
+    background-color: #fff;
+    color: #00C3B5;
 }
 
 #connection-mode-btn.active {
-    background-color: #00645C;
+    background-color: #fff;
+    color: #00C3B5;
 }
 
-h3 {
-    color: #fff;
-    font-size: 1.2em;
-    margin-bottom: 10px;
-}
 
-input[type="text"],
-select {
-    width: 100%;
-    padding: 6px;
-    margin: 8px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #444b52;
-    color: #fff;
-}
-
-button {
-    padding: 8px;
-    background-color: #00C3B5;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #00645C;
-}
-
-#selected-device-label {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
 
 #Canvas {
-    border: 2px solid #555;
-    background-color: #09001d;
-}
-
-.packet {
-    color: red;
-}
-
-.terminal-window {
-    position: fixed;
-    top: 100px;
-    left: 100px;
-    width: 400px;
-    height: 300px;
-    background-color: #333;
-    color: white;
-    padding: 10px;
-    border: 1px solid #000;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-}
-
-.terminal-window textarea {
-    flex-grow: 1;
-    background: #000;
-    color: #0f0;
-    border: none;
-    margin-bottom: 10px;
-}
-
-.terminal-window input {
-    width: 100%;
-    background: #222;
-    color: #0f0;
-    border: none;
-    padding: 5px;
-}
-
-.terminal-window button {
-    background-color: #ff0000;
-    border: none;
-    color: #fff;
-    padding: 4px;
-    cursor: pointer;
-    align-self: flex-end;
-}
-
-canvas {
-    cursor: pointer;
+    background-color: #00C3B5;
 }
 
 #config-modal {

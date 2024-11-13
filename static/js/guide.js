@@ -316,9 +316,9 @@ if (device.type === "pc") {
     ctx.arc(device.x, device.y, 20, 0, Math.PI * 2);
 }
 
-ctx.fillStyle = "#00C3B5";  // Device color
+ctx.fillStyle = "#fff";  // Device color
 ctx.fill();
-ctx.strokeStyle = "#000";  // Border color
+ctx.strokeStyle = "#00C3B5";  // Border color
 ctx.stroke();
 
 // Set text properties for device label
