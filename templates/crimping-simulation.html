@@ -1,0 +1,908 @@
+{% extends 'base.html' %} {% block head %}
+
+<title>UTP Cable Crimping Simulation | RiddleNet</title>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/crimping-simulation.css') }}"
+/>
+<link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}" />
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif; /* Change font-family to Poppins */
+}
+
+body {
+    background-color: #09001d ;
+    background-size: cover;
+    height: 100vh;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden; 
+  }
+
+.container {
+    width: 80%;
+    max-width: 1200px;
+    background: #09001d;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border: 2px solid #00C3B5;
+}
+
+.modal {
+    display: none;
+    position: absolute; /* Change to absolute for dynamic positioning */
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    color: #fff;
+  }
+
+  .modal-content {
+    background-color: #09001d;
+    border-radius: 20px;
+    border: 2px solid #00C3B5;
+    width: 300px;
+    text-align: center;
+    position: relative;
+  }
+
+  .modal-content::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid #09001d;
+    border-top-color: #09001d;
+  }
+
+  .close-modal button {
+    color: white;
+    border: none;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .highlight {
+    border: 3px solid #FFD700;
+    box-shadow: 0 0 35px #FFD700;
+    z-index: 1001;
+    position: relative;
+  }
+  
+  .tutorial-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .tutorial-buttons button {
+    background: #00C3B5;
+    border: 2px solid #00C3B5;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .tutorial-buttons button:disabled {
+    background: #555;
+    border-color: #555;
+    cursor: not-allowed;
+  }
+  
+  .tutorial-buttons button:hover:not(:disabled) {
+    background: #00645C;
+    border-color: #00645C;
+  }
+  
+h1 {
+    margin-bottom: 20px;
+    font-size: 32px; /* Slightly larger for better visibility */
+    background: linear-gradient(45deg, transparent, #00C3B5, transparent);
+     color: #fff;
+ }
+
+ h2{
+     margin-bottom: 20px;
+    font-size: 32px; /* Slightly larger for better visibility */
+     color: #fff;
+ }
+.wiring-type {
+    margin-bottom: 20px;
+    justify-content: center; /* Center the select box */
+ align-items: center;
+ gap: 10px; /* Adds spacing between label and select */
+}
+
+.wiring-type label {
+    font-size: 18px;
+    margin-right: 10px;
+    background: linear-gradient(45deg, transparent, #00C3B5, transparent);  /* Added gradient background */
+ color: #fff; /* Changed label text color to white */
+ padding: 5px 10px; /* Added padding to match select box style */
+ border: 2px solid #00C3B5; /* Added border to match select */
+ border-radius: 5px; /* Add slight rounding */
+}
+
+.wiring-type select {
+    padding: 5px;
+    font-size: 16px;
+    border: 2px solid #00C3B5;  /* Added border to match h1 */
+     background: linear-gradient(45deg, transparent, #00C3B5, transparent);  /* Added gradient background */
+     color: #fff; /* Changed text color to white */
+     align-items: center;
+}
+
+.wiring-type select option {
+ background-color: #09001d;  /* Dark background for the options */
+ color: #fff;  /* White text color for better contrast */
+ padding: 10px;  /* Add padding for spacing */
+ border: none;  /* Remove borders */
+}
+.cable, .rj45-connector {
+    margin: 20px 0;
+}
+
+.wires {
+    display: flex;
+    justify-content: center;
+    gap: 5px;  /* Reduced gap to fit the wires neatly */
+    margin-bottom: 20px;
+}
+
+.wire {
+    width: 60px;  /* Reduced width to make all wires fit */
+    height: 30px;  /* Same height as the slots for uniformity */
+    background-color: #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: grab;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    border: 2px solid #00C3B5; /* Added solid teal border */
+
+}
+
+.wire:hover {
+    background-color: #ccc;
+}
+
+.rj45-connector {
+    text-align: center;
+}
+
+.wire-slots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;  /* Reduced gap to match the wires */
+    margin-bottom: 20px;
+}
+
+.wire-slot {
+    width: 60px;  /* Matches the wire width */
+    height: 30px;
+    background-color: #e6e6e6;
+    border: 2px dashed #00C3B5; /* Changed to dashed teal border */
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.wire-slot:hover {
+    background-color: #d9d9d9;
+}
+
+.action-buttons {
+    margin-top: 20px;
+}
+
+button {
+ width: 100px;
+ height: 47px;
+ background: #00C3B5;
+ border: 2px solid #00C3B5;
+ outline: none;
+ border-radius: 6px;
+ font-size: 16px;
+ color: #fff;
+ font-weight: 600;
+ margin: 0 20px 20px;
+ cursor: pointer;
+ transition: 0.5s;
+}
+
+button i{
+  width: 100%;
+  height: 100%;
+  top: 50%;
+  height: 50%;
+}
+
+/* Hover effect for the first button (Crimp the Cable) */
+button:nth-child(1):hover {
+ background: #00645C;
+ border-color: #00645C;
+}
+
+/* Transparent background and text color for the second button (Try Again) */
+button:nth-child(2) {
+ background: transparent;
+ color: #00C3B5;
+}
+
+/* Hover effect for the third button */
+button:nth-child(2):hover {
+ background: #00C3B5;
+ color: #fff;
+}
+
+button:nth-child(3) {
+ background: transparent;
+ color: #00C3B5;
+}
+
+/* Hover effect for the third button */
+button:nth-child(3):hover {
+ background: #00C3B5;
+ color: #fff;
+}
+.result {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #007BFF;
+}
+
+/* Color for each wire */
+#orange-A, #orange-B {
+    background-color: orange;
+}
+
+#white-orange-A, #white-orange-B {
+    background-color: #ffcc99; /* Light orange for white-orange */
+}
+
+#green-A, #green-B {
+    background-color: green;
+}
+
+#white-green-A, #white-green-B {
+    background-color: #99ff99; /* Light green for white-green */
+}
+
+#blue-A, #blue-B {
+    background-color: blue;
+}
+
+#white-blue-A, #white-blue-B {
+    background-color: #99ccff; /* Light blue for white-blue */
+}
+
+#brown-A, #brown-B {
+    background-color: brown;
+}
+
+#white-brown-A, #white-brown-B {
+    background-color: #d2b48c; /* Light brown for white-brown */
+}
+
+
+#timer {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff0000; /* Red color for urgency */
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    padding: 10px;
+    border-radius: 5px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000; /* Ensure it stays on top */
+    text-align: center;
+}
+
+ 
+
+</style>
+{% endblock %} {% block body %}
+<div class="container">
+  <h1>UTP Cable Crimping Simulation</h1>
+
+  <div id="tutorialModal" class="modal">
+    <div class="modal-content">
+      <h2>Tutorial</h2>
+      <div id="tutorialStep">
+        <p>Welcome to the UTP Cable Crimping Simulation! Follow these steps to learn how to play:</p>
+      </div>
+      <div class="tutorial-buttons">
+        <button id="prevStep" onclick="prevTutorialStep()" disabled>Previous</button>
+        <button id="nextStep" onclick="nextTutorialStep()">Next</button>
+        <button id="closeTutorial" onclick="closeTutorial()">Close</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Wiring Type Selection -->
+  <div class="wiring-type">
+    <label for="wiring-select">Select Wiring Type:</label>
+    <select id="wiring-select">
+      <option value="straightthrough">Straight-Through (T568B)</option>
+      <option value="crossover">Crossover (T568A to T568B)</option>
+    </select>
+
+    
+
+
+  <!-- UTP Cable (End A) -->
+  <div class="cable">
+    <h2>Arrange Wires for End A</h2>
+    <div class="wires" id="endA-wires">
+      <div
+        class="wire"
+        id="orange-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        Orange
+      </div>
+      <div
+        class="wire"
+        id="white-orange-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Orange
+      </div>
+      <div class="wire" id="green-A" draggable="true" ondragstart="drag(event)">
+        Green
+      </div>
+      <div
+        class="wire"
+        id="white-blue-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Blue
+      </div>
+      <div class="wire" id="blue-A" draggable="true" ondragstart="drag(event)">
+        Blue
+      </div>
+      <div
+        class="wire"
+        id="white-green-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Green
+      </div>
+      <div class="wire" id="brown-A" draggable="true" ondragstart="drag(event)">
+        Brown
+      </div>
+      <div
+        class="wire"
+        id="white-brown-A"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Brown
+      </div>
+    </div>
+  </div>
+
+  <!-- RJ-45 Connector (End A) -->
+  <div class="rj45-connector">
+    <h2>Drop the Wires for End A Here</h2>
+    <div class="wire-slots" id="endA">
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="0"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="1"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="2"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="3"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="4"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="5"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="6"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="7"
+      ></div>
+    </div>
+  </div>
+
+  <!-- UTP Cable (End B) -->
+  <div class="cable">
+    <h2>Arrange Wires for End B</h2>
+    <div class="wires" id="endB-wires">
+      <div
+        class="wire"
+        id="orange-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        Orange
+      </div>
+      <div
+        class="wire"
+        id="white-orange-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Orange
+      </div>
+      <div class="wire" id="green-B" draggable="true" ondragstart="drag(event)">
+        Green
+      </div>
+      <div
+        class="wire"
+        id="white-blue-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Blue
+      </div>
+      <div class="wire" id="blue-B" draggable="true" ondragstart="drag(event)">
+        Blue
+      </div>
+      <div
+        class="wire"
+        id="white-green-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Green
+      </div>
+      <div class="wire" id="brown-B" draggable="true" ondragstart="drag(event)">
+        Brown
+      </div>
+      <div
+        class="wire"
+        id="white-brown-B"
+        draggable="true"
+        ondragstart="drag(event)"
+      >
+        White-Brown
+      </div>
+    </div>
+  </div>
+
+  <!-- RJ-45 Connector (End B) -->
+  <div class="rj45-connector">
+    <h2>Drop the Wires for End B Here</h2>
+    <div class="wire-slots" id="endB">
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="0"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="1"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="2"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="3"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="4"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="5"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="6"
+      ></div>
+      <div
+        class="wire-slot"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+        data-slot="7"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Crimping Button -->
+  <div class="action-buttons">
+    <button onclick="checkWiring()">Crimp the Cable</button>
+  </div>
+
+  <div class="lowered-button">
+    <button onclick="resetSimulation()">Try Again</button>
+    <button onclick="goToHome()">Go to Home</button>
+    <button onclick="showTutorial()"><i class='bx bx-question-mark'></i></button>
+
+  </div>
+
+</div>
+
+ 
+<script>
+
+window.onload = function() {
+    document.getElementById("startGameModal").style.display = "flex"; // Show start game popup
+};
+
+
+function showModal(message) {
+    document.getElementById("modalMessage").innerText = message;
+    document.getElementById("resultModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("resultModal").style.display = "none";
+}
+
+function disableInteractions() {
+    // Disable all buttons by class instead of by ID to match button setup in HTML
+    document.querySelector(".action-buttons button").disabled = true;
+    document.querySelector(".lowered-button button").disabled = true;
+
+    // Disable drag and drop functionality
+    const wires = document.querySelectorAll(".wire");
+    wires.forEach(wire => {
+        wire.setAttribute("draggable", "false");
+    });
+
+    const slots = document.querySelectorAll(".wire-slot");
+    slots.forEach(slot => {
+        slot.removeAttribute("ondrop");
+        slot.removeAttribute("ondragover");
+    });
+}
+
+function enableInteractions() {
+    // Enable all buttons
+    document.querySelector(".action-buttons button").disabled = false;
+    document.querySelector(".lowered-button button").disabled = false;
+
+    // Enable drag and drop functionality
+    const wires = document.querySelectorAll(".wire");
+    wires.forEach(wire => {
+        wire.setAttribute("draggable", "true");
+    });
+
+    const slots = document.querySelectorAll(".wire-slot");
+    slots.forEach(slot => {
+        slot.setAttribute("ondrop", "drop(event)");
+        slot.setAttribute("ondragover", "allowDrop(event)");
+    });
+}
+
+  // Allow drop
+  function allowDrop(ev) {
+    ev.preventDefault();
+  }
+
+  function resetSimulation() {
+    // Clear wire slots for End A
+    const slotsEndA = document.querySelectorAll("#endA .wire-slot");
+    slotsEndA.forEach(slot => {
+        if (slot.children.length > 0) {
+            const wire = slot.children[0];
+            document.getElementById("endA-wires").appendChild(wire);
+        }
+    });
+
+    // Clear wire slots for End B
+    const slotsEndB = document.querySelectorAll("#endB .wire-slot");
+    slotsEndB.forEach(slot => {
+        if (slot.children.length > 0) {
+            const wire = slot.children[0];
+            document.getElementById("endB-wires").appendChild(wire);
+        }
+    });
+
+    // Clear result message
+    document.getElementById("result").innerText = "";
+
+    // Enable interactions
+    enableInteractions();
+}
+
+  function goToHome() {
+    window.location.href = "{{ url_for('dashboard') }}";
+  }
+
+  // Handle drag
+  function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+    ev.target.classList.add("dragging");
+  }
+
+  // Handle drop
+  function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    const targetSlot = ev.target;
+
+    // Only allow one wire per slot, and only if the slot is empty
+    if (
+      targetSlot.classList.contains("wire-slot") &&
+      targetSlot.children.length === 0
+    ) {
+      targetSlot.appendChild(document.getElementById(data));
+    }
+  }
+
+  // Handle the end of drag (to reset the wire if not placed in a valid slot)
+  function dragEnd(ev) {
+    const wire = ev.target;
+
+    // If the wire is not in a valid slot, move it back to its original area
+    if (!wire.parentElement.classList.contains("wire-slot")) {
+      const wireId = wire.id.includes("-A") ? "endA-wires" : "endB-wires";
+      document.getElementById(wireId).appendChild(wire);
+    }
+  }
+
+  // Attach the dragend event to each wire
+  document.querySelectorAll(".wire").forEach((wire) => {
+    wire.addEventListener("dragend", dragEnd);
+  });
+
+  // Check wiring order based on selected wiring type
+  function checkWiring() {
+    const wiringType = document.getElementById("wiring-select").value;
+
+    // T568A standard (used for one end of a crossover)
+    const t568AOrder = [
+      "white-green",
+      "green",
+      "white-orange",
+      "blue",
+      "white-blue",
+      "orange",
+      "white-brown",
+      "brown",
+    ];
+
+    // T568B standard (used for straight-through)
+    const t568BOrder = [
+      "white-orange",
+      "orange",
+      "white-green",
+      "blue",
+      "white-blue",
+      "green",
+      "white-brown",
+      "brown",
+    ];
+
+    // Correct wiring for each end
+    let correctEndA = [];
+    let correctEndB = [];
+
+    if (wiringType === "straightthrough") {
+      correctEndA = t568BOrder; // Both ends are T568B
+      correctEndB = t568BOrder;
+    } else if (wiringType === "crossover") {
+      correctEndA = t568AOrder; // End A is T568A, End B is T568B
+      correctEndB = t568BOrder;
+    }
+
+    // Get user wiring for End A
+    let userOrderEndA = [];
+    const slotsEndA = document.querySelectorAll("#endA .wire-slot");
+    slotsEndA.forEach((slot) => {
+      if (slot.children.length > 0) {
+        userOrderEndA.push(slot.children[0].id.replace("-A", ""));
+      }
+    });
+
+    // Get user wiring for End B
+    let userOrderEndB = [];
+    const slotsEndB = document.querySelectorAll("#endB .wire-slot");
+    slotsEndB.forEach((slot) => {
+      if (slot.children.length > 0) {
+        userOrderEndB.push(slot.children[0].id.replace("-B", ""));
+      }
+    });
+
+    // Validate wiring for both ends
+    if (
+      JSON.stringify(userOrderEndA) === JSON.stringify(correctEndA) &&
+      JSON.stringify(userOrderEndB) === JSON.stringify(correctEndB)
+    ) {
+      document.getElementById("result").innerText =
+        alert("Wiring is correct! You can crimp the cable.");
+    } else {
+      document.getElementById("result").innerText =
+        alert("Wiring is incorrect. Please try again.");
+    }
+  }
+  const tutorialSteps = [
+    {
+      text: "Welcome to the UTP Cable Crimping Simulation! Follow these steps to learn how to play:",
+      highlight: null
+    },
+    {
+      text: "Step 1: Select the wiring type from the dropdown menu.",
+      highlight: "#wiring-select"
+    },
+    {
+      text: "Step 2: Drag and drop the wires into the correct slots for End A.",
+      highlight: "#endA-wires"
+    },
+    {
+      text: "Step 3: Drag and drop the wires into the correct slots for End B.",
+      highlight: "#endB-wires"
+    },
+    {
+      text: "Step 4: Click the 'Crimp the Cable' button to check your wiring.",
+      highlight: ".action-buttons button:nth-child(1)"
+    },
+    {
+      text: "Step 5: If the wiring is correct, you will see a success message. If not, try again.",
+      highlight: null
+    },
+    {
+      text: "Step 6: Use the 'Try Again' button to reset the simulation and start over.",
+      highlight: ".lowered-button button:nth-child(1)"
+    },
+    {
+      text: "Step 7: Use the 'Go to Home' button to return to the dashboard.",
+      highlight: ".lowered-button button:nth-child(2)"
+    }
+  ];
+
+  let currentStep = 0;
+
+  function showTutorial() {
+    document.getElementById("tutorialModal").style.display = "flex";
+    updateTutorialStep();
+  }
+
+  function updateTutorialStep() {
+    const step = tutorialSteps[currentStep];
+    document.getElementById("tutorialStep").innerHTML = `<p>${step.text}</p>`;
+    
+    // Remove highlight from previous step
+    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+    
+    // Highlight the current step element
+    if (step.highlight) {
+      const highlightElement = document.querySelector(step.highlight);
+      highlightElement.classList.add('highlight');
+      
+      // Position the modal near the highlighted element
+      const rect = highlightElement.getBoundingClientRect();
+      const modal = document.getElementById("tutorialModal");
+      const modalHeight = modal.offsetHeight;
+      const modalWidth = modal.offsetWidth;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      // Determine the best position for the modal
+      let top = rect.top + window.scrollY + rect.height + 10; // Default position below the element
+      let left = rect.left + window.scrollX + (rect.width / 2) - (modalWidth / 2);
+
+      if (top + modalHeight > viewportHeight) {
+        top = rect.top + window.scrollY - modalHeight - 10; // Position above the element if it overflows
+      }
+      if (left + modalWidth > viewportWidth) {
+        left = viewportWidth - modalWidth - 10; // Adjust to the left if it overflows
+      }
+      if (left < 0) {
+        left = 10; // Adjust to the right if it overflows
+      }
+
+      modal.style.top = `${top}px`;
+      modal.style.left = `${left}px`;
+      modal.style.transform = `none`;
+    } else {
+      // Center the modal if no highlight
+      const modal = document.getElementById("tutorialModal");
+      modal.style.top = `50%`;
+      modal.style.left = `50%`;
+      modal.style.transform = `translate(-50%, -50%)`;
+    }
+    
+    // Enable/disable buttons
+    document.getElementById("prevStep").disabled = currentStep === 0;
+    document.getElementById("nextStep").disabled = currentStep === tutorialSteps.length - 1;
+  }
+
+  function nextTutorialStep() {
+    if (currentStep < tutorialSteps.length - 1) {
+      currentStep++;
+      updateTutorialStep();
+    }
+  }
+
+  function prevTutorialStep() {
+    if (currentStep > 0) {
+      currentStep--;
+      updateTutorialStep();
+    }
+  }
+
+  function closeTutorial() {
+    document.getElementById("tutorialModal").style.display = "none";
+    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+  }
+
+  window.onload = function() {
+    showTutorial();
+  };
+
+</script>
+{% endblock %}

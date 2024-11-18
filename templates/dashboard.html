@@ -1,0 +1,324 @@
+{% extends 'base.html' %} {% block head %}
+<title> Dashboard | RiddleNet</title>
+<style>
+  .main {
+    background: url("{{ url_for('static', filename='img/Bg.jpg') }}") no-repeat
+      center center fixed;
+    background-size: cover;
+    height: 100vh;
+    background-position: center;
+    transition: 0.3s ease;
+  }
+
+  .main.active,
+  .about-us.active,
+  .profile.active ~ .leaderboard,
+  .leaderboard.active ~ .profile,
+  .profile.active ~ .main,
+  .leaderboard.active ~ .main {
+    filter: blur(15px);
+    pointer-events: none;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  
+  .about-us.active,
+  .profile.active ~ .leaderboard,
+  .leaderboard.active ~ .profile,
+  .profile.active ~ .main,
+  .leaderboard.active ~ .main {
+    display: none;
+  }
+
+  .user-info,
+  .leaderboard-container,
+  #about-us {
+    height: 100%;
+    width: 100%;
+    background: transparent;
+    position: relative;
+    background: url("{{ url_for('static', filename='img/Bg.jpg') }}") no-repeat
+      center center fixed;
+    background-size: cover;
+  }
+
+
+</style>
+
+<script src="{{ url_for('static', filename='js/questions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/dashboard.css') }}"
+/>
+<link
+  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+  rel="stylesheet"
+/>
+<link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}" />
+{% endblock %} {% block body %}
+<main class="main">
+  <!-- Header -->
+  <header class="header">
+    {% if user.profile_img %}
+    <img src="{{ url_for('static', filename=user.profile_img) }}" 
+    alt="Profile Image" 
+    style="height: 100px; width: 100px; border-radius: 100%; border: 3px solid #00C3B5;"
+    class="profile-link"
+    >
+    {% else %}
+    <img
+      style="height: 100px; width: 100px; border-radius: 100%; border: 10px solid #00C3B5;"
+      draggable="false"
+      src="{{ url_for('static', filename='img/Logo.png') }}"
+      alt="Logo"
+      class="profile-link"
+    />
+    {% endif %}
+
+    <nav class="navbar">
+      <a href="#">Dashboard</a>
+      <a href="#leaderboard" class="leaderboard-link">Leaderboard</a>
+      <a href="#about-us">About Us</a>
+      <a href="/logout">Log out</a>
+    </nav>
+  </header>
+
+  
+
+  <div class="container">
+    <section class="quiz-section">
+      <div class="quiz-box">
+        <h1>RiddleNet</h1>
+        <div class="quiz-header">
+          <span>Website</span>
+          <span class="header-score"></span>
+        </div>
+        <h2 class="question-text">What does HTML stand for?</h2>
+        <div class="option-list"></div>
+        <div class="quiz-footer">
+          <button class="goHome-quiz-btn">Go to Home</button>
+          <span class="question-total">1 of 5 Questions</span>
+          <button class="next-btn">Next</button>
+
+        </div>
+      </div>
+    
+
+    <div class="result-box">
+      <h2>Result!</h2>
+      <div class="percentage-container">
+        <div class="circular-progress">
+          <span class="progress-value">0%</span>
+        </div>
+        <span class="score-text">Your Score 0 out of 5</span>
+      </div>
+      <div class="buttons">
+        <button class="tryAgain-btn">Try Again</button>
+        <button class="goHome-result-btn">Go to Home</button>
+      </div>
+    </div>
+  </section>
+
+    <!-- Home Section -->
+  <section class="home">
+    <div class="home-content">
+      <h1>RiddleNet</h1>
+      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+      <button class="start-btn">Start RiddleNet</button>
+    </div>
+  </section>
+  </div>
+
+  
+    
+
+
+</main>
+
+<!-- Profile Section -->
+<section id="profile" class="profile-section hidden">
+  <div class="profile-content">
+    <i class="bx bx-x profile-exit-btn"></i>
+    <h3>Profile</h3>
+    <form action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data">
+      
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="Username"
+        autocomplete="off"
+        required
+      />
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Password"
+        required
+      />
+      <input type="file" name="profile_img" accept="image/*">
+
+  <button type="submit" class="profile-update-btn">Update</button>
+    </form>
+
+    
+  </div>
+</section>
+
+<!-- Leaderboard Section -->
+<section id="leaderboard" class="leaderboard">
+  <div class="leaderboard-container">
+    <i class="bx bx-x leaderboard-exit-btn"></i>
+    <h3>Leaderboard</h3>
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Highest Score</th>
+          <th>Last Attempt</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in leaderboard %}
+        <tr>
+          <td>{{ item[0] }}</td>
+          <td>{{ item[1] }}</td>
+          <td>{{ item[2].strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3">No leaderboard data available.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+<div class="view-my-scores-container">
+  <button class="view-my-scores-btn">View My Score</button>
+</div>
+</section>
+
+<div class="scores-popup" id="scoresPopup">
+  <i class="bx bx-x close-scores-popup"></i>
+  <h4>Scores</h4>
+  <table id="scores-list" class="collapsed score-table">
+    <thead>
+      <tr>
+        <th>Score</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for score in scores %}
+      <tr>
+        <td>{{ score.score }}</td>
+        <td>{{ score.date_attempted.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>
+          <form action="{{ url_for('delete_score', score_id=score.id) }}" method="POST" style="display: inline">
+            <button type="submit" class="delete">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Popup Info -->
+<div class="popup-info">
+  <h2>Choose Category</h2>
+  <div class="choices-btn-group">
+    <button class="choice-btn" onclick="goToNetworkTopology()">
+      Network Topology
+    </button>
+    <button class="choice-btn continue-btn">Troubleshooting Riddle</button>
+    <button class="choice-btn" onclick="goToGuide()">
+      Troubleshooting Guide
+    </button>
+    <button class="choice-btn" onclick="goToCrimp()">
+      UTP Cable Crimping Simulation
+    </button>
+  </div>
+  <div class="btn-group">
+    <button class="info-btn exit-btn">Exit</button>
+  </div>
+</div>
+
+
+<!-- About Us Section -->
+<section id="about-us" class="about-us">
+  <div class="about-us-container">
+    <h2>About Us</h2>
+    <p class="about-description">
+      We are a team of four dedicated individuals contributing to the RiddleNet
+      project. Together, we bring innovation, creativity, and technical
+      expertise to provide interactive learning experiences.
+    </p>
+    <div class="about-us-list work-list">
+      <div class="about-card work">
+        <img
+          src="{{ url_for('static', filename='img/Gilbert.jpg') }}"
+          alt="Gilbert I. Requitud Jr."
+        />
+        <div class="layer">
+          <h3>Gilbert I. Requitud Jr.</h3>
+          <span>Project Lead & Developer</span>
+          <a href="https://web.facebook.com/profile.php?id=100013736235548">Learn more</a>
+        </div>
+      </div>
+      <div class="about-card work">
+        <img
+          src="{{ url_for('static', filename='img/Xavier.jpg') }}"
+          alt="Xavier Caparas"
+        />
+        <div class="layer">
+          <h3>Xavier Caparas</h3>
+          <span>Lead Designer</span>
+          <a href="https://web.facebook.com/cep.caparas.3">Learn more</a>
+        </div>
+      </div>
+      <div class="about-card work">
+        <img
+          src="{{ url_for('static', filename='img/Barron.png') }}"
+          alt="Prince Barron Rosendal"
+        />
+        <div class="layer">
+          <h3>Prince Barron Rosendal</h3>
+          <span>Backend Developer</span>
+          <a href="https://web.facebook.com/princebarron.0510">Learn more</a>
+        </div>
+      </div>
+      <div class="about-card work">
+        <img
+          src="{{ url_for('static', filename='img/Jeann.png') }}"
+          alt="Jeann Monticalbo"
+        />
+        <div class="layer">
+          <h3>Jeann Monticalbo</h3>
+          <span>Frontend Developer</span>
+          <a href="https://web.facebook.com/jheanne.corollo">Learn more</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+  function goToNetworkTopology() {
+    location.href = "{{ url_for('topology') }}";
+  }
+
+  function goToGuide() {
+    location.href = "{{ url_for('guide') }}";
+  }
+
+  function goToCrimp() {
+    location.href = "{{ url_for('crimp') }}";
+  }
+</script>
+{% endblock %}
