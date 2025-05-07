@@ -1,0 +1,1025 @@
+{% extends 'admin/base.html' %} {% block head %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay Responses | RiddleNet Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}">
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+        
+        body {
+            background: url("{{ url_for('static', filename='img/Bg.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .container {
+            display: flex;
+            width: 100%;
+        }
+        
+        main {
+            flex: 1;
+            padding: 20px;
+            margin-left: 260px;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+        
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            color: #fff;
+        }
+        
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card {
+            background-color: rgba(0, 195, 181, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            background-color: rgba(0, 195, 181, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stats-card h3 {
+            font-size: 16px;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+        
+        .stats-card p {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 195, 181, 0.1);
+        }
+        
+        th {
+            background-color: rgba(0, 195, 181, 0.9);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        
+        tr:hover {
+            background-color: rgba(0, 195, 181, 0.05);
+            cursor: pointer;
+        }
+        
+        td .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        td .status.reviewed {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+        
+        td .status.pending {
+            background-color: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
+        }
+        
+        .username-cell {
+            font-weight: 600;
+            color: #00C3B5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .username-cell i {
+            font-size: 18px;
+            opacity: 0.7;
+        }
+        
+        .essay-excerpt {
+            display: block;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #ddd;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-align: center;
+            gap: 6px;
+        }
+        
+        .btn i {
+            font-size: 16px;
+        }
+        
+        .btn-view {
+            background-color: rgba(0, 195, 181, 0.9);
+            min-width: 110px;
+        }
+        
+        .btn-view:hover {
+            background-color: rgba(0, 195, 181, 1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-edit {
+            background-color: #FFC107;
+        }
+        
+        .btn-edit:hover {
+            background-color: #e0a800;
+        }
+        
+        .btn-delete {
+            background-color: #f44336;
+        }
+        
+        .btn-delete:hover {
+            background-color: #d32f2f;
+        }
+        
+        .actions-column {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .alert-success {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .alert-danger {
+            background-color: rgba(244, 67, 54, 0.2);
+            border-left: 4px solid #F44336;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+        
+        .pagination a {
+            display: inline-block;
+            padding: 8px 12px;
+            background-color: rgba(0, 195, 181, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .pagination a.active {
+            background-color: rgba(0, 195, 181, 0.7);
+        }
+        
+        .pagination a:hover:not(.active) {
+            background-color: rgba(0, 195, 181, 0.4);
+        }
+        
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .modal-content {
+            position: relative;
+            background-color: rgba(30, 30, 30, 0.95);
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 0 25px rgba(0, 195, 181, 0.5);
+            animation: modalFadeIn 0.3s ease-out;
+            border: 1px solid rgba(0, 195, 181, 0.3);
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-30px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #00C3B5;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .modal-header {
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: #00C3B5;
+            font-size: 24px;
+        }
+        
+        .essay-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .essay-details .detail-group {
+            margin-bottom: 15px;
+        }
+        
+        .essay-details .detail-label {
+            display: block;
+            color: #00C3B5;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .essay-details .detail-value {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            color: #fff;
+        }
+        
+        .essay-content {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            max-height: 400px; /* Increased height for better readability */
+            overflow-y: auto;
+            line-height: 1.6;
+            font-size: 15px;
+            color: #f0f0f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Scrollbar styling for essay content */
+        .essay-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .essay-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
+        .essay-content::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 195, 181, 0.5);
+            border-radius: 4px;
+        }
+        
+        /* Visual emphasis on the essay answer section */
+        .answer-section {
+            border: 1px solid rgba(0, 195, 181, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            background-color: rgba(0, 195, 181, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .answer-section .detail-label {
+            color: #00C3B5;
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: block;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .grading-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .grade-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .grade-input input {
+            width: 80px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .grade-input .btn {
+            width: auto;
+        }
+
+        @media (max-width: 992px) {
+            .essay-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            main {
+                margin-left: 0;
+                padding: 10px;
+            }
+
+            #sidebar {
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            #sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-toggle {
+                display: block;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1001;
+                background-color: rgba(0, 195, 181, 0.9);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px 12px;
+                cursor: pointer;
+            }
+            
+            .admin-container {
+                padding: 15px;
+            }
+            
+            .essay-excerpt {
+                max-width: 150px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            th, td {
+                padding: 8px 10px;
+            }
+            
+            .essay-excerpt {
+                max-width: 100px;
+            }
+            
+            .btn {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        tr {
+            animation: fadeIn 0.4s ease-out forwards;
+            animation-delay: calc(0.05s * var(--row-index, 0));
+            opacity: 0;
+        }
+        
+        .highlight-row {
+            background-color: rgba(0, 195, 181, 0.1) !important;
+        }
+        
+        .user-profile-pic {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(0, 195, 181, 0.7);
+        }
+    </style>
+</head>
+{% endblock %}
+
+{% block body %}
+{{ super() }}
+<body>
+    <div class="container">
+        <!-- Mobile sidebar toggle button -->
+        <button id="sidebar-toggle" class="sidebar-toggle">
+            <i class='bx bx-menu'></i>
+        </button>
+        
+        <!-- Main Content -->
+        <main>
+            <header>
+                <h2>Essay Responses</h2>
+                <div class="admin-info">
+                    <span>Welcome, Admin</span>
+                </div>
+            </header>
+
+            <div class="admin-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="stats-summary">
+                    <div class="stats-card">
+                        <h3>Total Essays</h3>
+                        <p>{{ essays|length }}</p>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Pending Review</h3>
+                        <p>{{ essays|selectattr('is_graded', 'equalto', false)|list|length }}</p>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Reviewed</h3>
+                        <p>{{ essays|selectattr('is_graded', 'equalto', true)|list|length }}</p>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Average Grade</h3>
+                        <p>
+                            {% set reviewed_essays = essays|selectattr('is_graded', 'equalto', true)|selectattr('graded_score', 'defined')|list %}
+                            {% if reviewed_essays %}
+                                {% set total_grade = namespace(value=0) %}
+                                {% for essay in reviewed_essays %}
+                                    {% set total_grade.value = total_grade.value + essay.graded_score %}
+                                {% endfor %}
+                                {{ "%.1f"|format(total_grade.value / reviewed_essays|length) }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="filters-row">
+                    <form action="{{ url_for('essay.index') }}" method="GET" id="filter-form">
+                        <div class="filter-group">
+                            <label for="reviewed">Status:</label>
+                            <select id="reviewed" name="reviewed" class="filter-select" onchange="this.form.submit()">
+                                <option value="all" {% if current_filters.reviewed == 'all' %}selected{% endif %}>All</option>
+                                <option value="no" {% if current_filters.reviewed == 'no' %}selected{% endif %}>Pending Review</option>
+                                <option value="yes" {% if current_filters.reviewed == 'yes' %}selected{% endif %}>Reviewed</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="category">Category:</label>
+                            <select id="category" name="category" class="filter-select" onchange="this.form.submit()">
+                                <option value="all" {% if current_filters.category == 'all' %}selected{% endif %}>All Categories</option>
+                                <option value="riddle" {% if current_filters.category == 'riddle' %}selected{% endif %}>Riddle</option>
+                                <option value="topology" {% if current_filters.category == 'topology' %}selected{% endif %}>Topology</option>
+                                <option value="troubleshoot" {% if current_filters.category == 'troubleshoot' %}selected{% endif %}>Troubleshooting</option>
+                                <option value="crimping" {% if current_filters.category == 'crimping' %}selected{% endif %}>Cable Crimping</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="sort_by">Sort By:</label>
+                            <select id="sort_by" name="sort_by" class="filter-select" onchange="this.form.submit()">
+                                <option value="newest" {% if current_filters.sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                                <option value="oldest" {% if current_filters.sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Username</th>
+                                <th style="width: 30%;">Question</th>
+                                <th style="width: 10%;">Category</th>
+                                <th style="width: 15%;">Date</th>
+                                <th style="width: 10%;">Status</th>
+                                <th style="width: 5%;">Grade</th>
+                                <th style="width: 15%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for essay in essays %}
+                            <tr data-id="{{ essay.id }}" style="--row-index: {{ loop.index }}">
+                                <td class="username-cell">
+                                    <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="User" class="user-profile-pic">
+                                    {{ essay.username if essay.username else essay.user_id }}
+                                </td>
+                                <td>
+                                    <span class="essay-excerpt" title="{{ essay.question }}">
+                                        {{ essay.question }}
+                                    </span>
+                                </td>
+                                <td>{{ essay.category }}</td>
+                                <td>{{ essay.submission_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <span class="status {% if essay.is_graded %}reviewed{% else %}pending{% endif %}">
+                                        {{ 'Reviewed' if essay.is_graded else 'Pending Review' }}
+                                    </span>
+                                </td>
+                                <td>{{ essay.graded_score if essay.graded_score is not none else 'N/A' }}</td>
+                                <td class="actions-column">
+                                    <button class="btn btn-view view-essay-btn" data-id="{{ essay.id }}" 
+                                            data-username="{{ essay.username if essay.username else essay.user_id }}"
+                                            data-question="{{ essay.question }}"
+                                            data-answer="{{ essay.answer }}"
+                                            data-category="{{ essay.category }}"
+                                            data-date="{{ essay.submission_date.strftime('%Y-%m-%d %H:%M') }}"
+                                            data-status="{{ 'Reviewed' if essay.is_graded else 'Pending Review' }}"
+                                            data-score="{{ essay.graded_score if essay.graded_score is not none else '' }}">
+                                        <i class='bx bx-show'></i> View
+                                    </button>
+                                    <button class="btn btn-edit edit-essay-btn" data-id="{{ essay.id }}">
+                                        <i class='bx bx-edit'></i> Edit
+                                    </button>
+                                    <form action="{{ url_for('essay.delete', essay_id=essay.id) }}" method="POST" style="display:inline;" class="delete-form">
+                                        <button type="submit" class="btn btn-delete delete-essay-btn" data-id="{{ essay.id }}">
+                                            <i class='bx bx-trash'></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align: center;">No essay responses found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination">
+                    <a href="#">&laquo;</a>
+                    <a href="#" class="active">1</a>
+                    <a href="#">&raquo;</a>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Essay View Modal -->
+        <div id="essayModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Essay Response Details</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="essay-details">
+                    <div class="detail-group">
+                        <span class="detail-label">ID</span>
+                        <div id="essay-id" class="detail-value"></div>
+                    </div>
+                    <div class="detail-group">
+                        <span class="detail-label">Username</span>
+                        <div id="essay-username" class="detail-value"></div>
+                    </div>
+                    <div class="detail-group">
+                        <span class="detail-label">Category</span>
+                        <div id="essay-category" class="detail-value"></div>
+                    </div>
+                    <div class="detail-group">
+                        <span class="detail-label">Date Submitted</span>
+                        <div id="essay-date" class="detail-value"></div>
+                    </div>
+                    <div class="detail-group">
+                        <span class="detail-label">Status</span>
+                        <div id="essay-status" class="detail-value"></div>
+                    </div>
+                    <div class="detail-group">
+                        <span class="detail-label">Current Grade</span>
+                        <div id="essay-score" class="detail-value"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <span class="detail-label">Question</span>
+                    <div id="essay-question" class="essay-content"></div>
+                </div>
+                
+                <div class="answer-section">
+                    <span class="detail-label">Student's Answer</span>
+                    <div id="essay-answer" class="essay-content"></div>
+                </div>
+                
+                <div class="grading-section">
+                    <h3>Grade Essay</h3>
+                    <p>Assign a grade from 0-100 to this essay response.</p>
+                    <div class="grade-input">
+                        <input type="number" id="grade-input" min="0" max="100" placeholder="Score">
+                        <button class="btn btn-view" id="save-grade-btn">Save Grade</button>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="btn btn-delete" id="close-modal-btn">Close</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Essay Modal -->
+        <div id="editEssayModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Essay</h2>
+                    <span class="close" id="edit-close">&times;</span>
+                </div>
+                <form id="edit-essay-form">
+                    <input type="hidden" id="edit-essay-id">
+                    <div class="detail-group">
+                        <span class="detail-label">Question</span>
+                        <textarea id="edit-question" class="edit-area"></textarea>
+                    </div>
+                    <div class="detail-group">
+                        <span class="detail-label">Student's Answer</span>
+                        <textarea id="edit-answer" class="edit-area"></textarea>
+                    </div>
+                    <div class="detail-group">
+                        <span class="detail-label">Category</span>
+                        <select id="edit-category" class="filter-select">
+                            <option value="riddle">Riddle</option>
+                            <option value="topology">Topology</option>
+                            <option value="troubleshoot">Troubleshooting</option>
+                            <option value="crimping">Cable Crimping</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-delete" id="edit-cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-view">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get the modal
+        const modal = document.getElementById("essayModal");
+        const editModal = document.getElementById("editEssayModal");
+        
+        // Get all buttons that open the modal
+        const viewButtons = document.querySelectorAll(".view-essay-btn");
+        const editButtons = document.querySelectorAll(".edit-essay-btn");
+        const tableRows = document.querySelectorAll("tbody tr[data-id]");
+        
+        // Get the <span> element that closes the modal
+        const closeBtn = document.querySelector(".close");
+        const closeEditBtn = document.getElementById("edit-close");
+        const closeModalBtn = document.getElementById("close-modal-btn");
+        const editCancelBtn = document.getElementById("edit-cancel-btn");
+        
+        // Add click event to table rows
+        tableRows.forEach(row => {
+            row.addEventListener("click", function(e) {
+                // Don't open modal if click was on a button or form
+                if (e.target.closest('.btn') || e.target.closest('form')) {
+                    return;
+                }
+                
+                const id = this.getAttribute("data-id");
+                if (id) {
+                    const viewButton = this.querySelector(`.view-essay-btn[data-id="${id}"]`);
+                    if (viewButton) {
+                        viewButton.click();
+                    }
+                }
+            });
+        });
+        
+        // When the user clicks on a view button, open the modal
+        viewButtons.forEach(button => {
+            button.addEventListener("click", function(e) {
+                e.stopPropagation(); // Prevent row click event
+                const essayId = this.getAttribute("data-id");
+                const username = this.getAttribute("data-username");
+                const question = this.getAttribute("data-question");
+                const answer = this.getAttribute("data-answer");
+                const category = this.getAttribute("data-category");
+                const date = this.getAttribute("data-date");
+                const status = this.getAttribute("data-status");
+                const score = this.getAttribute("data-score");
+                
+                // Highlight the row
+                document.querySelectorAll("tbody tr").forEach(tr => {
+                    tr.classList.remove("highlight-row");
+                });
+                const parentRow = this.closest("tr");
+                if (parentRow) {
+                    parentRow.classList.add("highlight-row");
+                }
+                
+                // Populate modal content
+                document.getElementById("essay-id").textContent = essayId;
+                document.getElementById("essay-username").textContent = username;
+                document.getElementById("essay-question").textContent = question;
+                document.getElementById("essay-answer").textContent = answer;
+                document.getElementById("essay-category").textContent = category;
+                document.getElementById("essay-date").textContent = date;
+                document.getElementById("essay-status").textContent = status;
+                document.getElementById("essay-score").textContent = score || "Not graded";
+                document.getElementById("grade-input").value = score;
+                
+                // Show modal with animation
+                modal.style.display = "block";
+            });
+        });
+        
+        // Edit button functionality
+        editButtons.forEach(button => {
+            button.addEventListener("click", function(e) {
+                e.stopPropagation(); // Prevent row click event
+                const essayId = this.getAttribute("data-id");
+                
+                // Fetch the full essay details from the server
+                fetch(`/api/essays/${essayId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById("edit-essay-id").value = data.id;
+                        document.getElementById("edit-question").value = data.question;
+                        document.getElementById("edit-answer").value = data.answer;
+                        document.getElementById("edit-category").value = data.category;
+                        
+                        // Show modal
+                        editModal.style.display = "block";
+                    })
+                    .catch(error => {
+                        console.error("Error fetching essay details:", error);
+                        alert("Failed to load essay details. Please try again.");
+                    });
+            });
+        });
+        
+        // Delete confirmation
+        document.querySelectorAll(".delete-essay-btn").forEach(button => {
+            button.addEventListener("click", function(e) {
+                e.stopPropagation(); // Prevent row click event
+                e.preventDefault();
+                
+                if (confirm("Are you sure you want to delete this essay response? This action cannot be undone.")) {
+                    this.closest("form").submit();
+                }
+            });
+        });
+        
+        // Form submission for edit
+        document.getElementById("edit-essay-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const essayId = document.getElementById("edit-essay-id").value;
+            const question = document.getElementById("edit-question").value;
+            const answer = document.getElementById("edit-answer").value;
+            const category = document.getElementById("edit-category").value;
+            
+            if (!question.trim() || !answer.trim() || !category.trim()) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+            
+            fetch(`/api/essays/${essayId}/edit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    question: question,
+                    answer: answer,
+                    category: category
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Essay updated successfully!");
+                    location.reload();
+                } else {
+                    throw new Error("Failed to update essay");
+                }
+            })
+            .catch(error => {
+                console.error("Error updating essay:", error);
+                alert("Failed to update essay. Please try again.");
+            });
+        });
+        
+        // Close modal functionality
+        closeBtn.onclick = function() { modal.style.display = "none"; }
+        closeModalBtn.onclick = function() { modal.style.display = "none"; }
+        closeEditBtn.onclick = function() { editModal.style.display = "none"; }
+        editCancelBtn.onclick = function() { editModal.style.display = "none"; }
+        
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+            if (event.target == editModal) {
+                editModal.style.display = "none";
+            }
+        }
+
+        // Handle saving the grade
+        document.getElementById("save-grade-btn").addEventListener("click", function() {
+            const essayId = document.getElementById("essay-id").textContent;
+            const score = document.getElementById("grade-input").value;
+            
+            if (score === "" || isNaN(score) || score < 0 || score > 100) {
+                alert("Please enter a valid score between 0 and 100");
+                return;
+            }
+            
+            // Send grade to server
+            fetch(`/api/essays/${essayId}/grade`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ score: score })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Grade saved successfully!");
+                    // Update the UI to reflect the new grade
+                    document.getElementById("essay-status").textContent = "Reviewed";
+                    document.getElementById("essay-score").textContent = score;
+                    
+                    // Update the table row
+                    const tableRow = document.querySelector(`button[data-id="${essayId}"]`).closest("tr");
+                    if (tableRow) {
+                        tableRow.querySelector("td:nth-child(6)").textContent = score;
+                        const statusElement = tableRow.querySelector(".status");
+                        statusElement.textContent = "Reviewed";
+                        statusElement.classList.remove("pending");
+                        statusElement.classList.add("reviewed");
+                    }
+                } else {
+                    throw new Error("Failed to save grade");
+                }
+            })
+            .catch(error => {
+                console.error("Error saving grade:", error);
+                alert("Failed to save grade. Please try again.");
+            });
+        });
+
+        // Sidebar toggle for mobile
+        const sidebarToggle = document.getElementById("sidebar-toggle");
+        const sidebar = document.getElementById("sidebar");
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener("click", function() {
+                sidebar.classList.toggle("active");
+            });
+        }
+
+        // Additional styling for edit modal
+        const style = document.createElement('style');
+        style.textContent = `
+            .edit-area {
+                width: 100%;
+                min-height: 150px;
+                background-color: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 5px;
+                color: #fff;
+                padding: 12px;
+                font-family: "Poppins", sans-serif;
+                resize: vertical;
+                margin-bottom: 15px;
+            }
+            
+            .edit-area:focus {
+                outline: none;
+                border-color: rgba(0, 195, 181, 0.5);
+                box-shadow: 0 0 5px rgba(0, 195, 181, 0.3);
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+{% endblock %}

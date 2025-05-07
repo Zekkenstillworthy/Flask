@@ -1,0 +1,1890 @@
+<!-- filepath: c:\Users\gilbe\Documents\Flask\templates\admin\user_management.html -->
+{% extends "admin/base.html" %}
+
+{% block head %}
+    <title>User Management | RiddleNet Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}">
+    <!-- Add QR Code library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+        
+        body {
+            background: url("{{ url_for('static', filename='img/Bg.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+        }
+        
+        main {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            flex-grow: 1;
+        }
+        
+        @media (max-width: 768px) {
+            main {
+                margin-left: var(--sidebar-collapsed-width) !important;
+            }
+        }
+        
+        main header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        main header h2 {
+            font-size: 24px;
+            color: #fff;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+        
+        .search-bar {
+            display: flex;
+            margin-bottom: 20px;
+            width: 100%;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .search-bar input {
+            flex-grow: 1;
+            padding: 15px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(0, 195, 181, 0.3);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar input:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 0 5px rgba(0, 195, 181, 0.2);
+        }
+        
+        .search-bar button {
+            padding: 15px 25px;
+            background-color: #00C3B5;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .search-bar button i {
+            font-size: 18px;
+        }
+        
+        .search-bar button:hover {
+            background-color: #00a39a;
+            transform: translateX(2px);
+        }
+        
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .user-type-tabs {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            color: #fff;
+        }
+        
+        .action-buttons {
+            margin-left: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            transition: background-color 0.3s ease;
+        }
+        
+        th {
+            background-color: rgba(0, 195, 181, 0.8);
+            color: white;
+            position: relative;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            text-align:center;
+        }
+        
+        
+        th.sort-asc:after {
+            transform: rotate(180deg);
+            opacity: 1;
+        }
+        
+        th.sort-desc:after {
+            opacity: 1;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tbody tr {
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(0, 195, 181, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        td .status {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+            min-width: 100px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        td .status.active {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        td .status.inactive {
+            background-color: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+        
+        td .status.banned {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        .user-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .user-actions .btn-text {
+            background: none;
+            color: #00C3B5;
+            padding: 6px 12px;
+            text-decoration: none;
+            min-width: auto;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            border: 1px solid transparent;
+        }
+        
+        .user-actions .btn-text:hover {
+            background-color: rgba(0, 195, 181, 0.1);
+            color: #fff;
+            border-color: rgba(0, 195, 181, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .user-actions .btn-text.view-user,
+        .user-actions .btn-text.view-admin {
+            color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        .user-actions .btn-text.view-user:hover,
+        .user-actions .btn-text.view-admin:hover {
+            background-color: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+        
+        .user-actions .btn-text.edit-user {
+            color: #2196F3;
+            background-color: rgba(33, 150, 243, 0.1);
+        }
+        
+        .user-actions .btn-text.edit-user:hover {
+            background-color: rgba(33, 150, 243, 0.3);
+            border-color: rgba(33, 150, 243, 0.5);
+        }
+        
+        .user-actions .btn-text.delete-user,
+        .user-actions .btn-text.delete-admin {
+            color: #F44336;
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        
+        .user-actions .btn-text.delete-user:hover,
+        .user-actions .btn-text.delete-admin:hover {
+            background-color: rgba(244, 67, 54, 0.3);
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+        
+        .btn {
+            padding: 8px 12px;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 2px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            min-width: 80px;
+            text-align: center;
+            background-color: #00C3B5;
+        }
+        
+        .btn-primary {
+            background-color: #00C3B5;
+        }
+        
+        .btn-primary:hover {
+            background-color: #00a39a;
+        }
+        
+        .btn-warning {
+            background-color: #ff9800;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e08600;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        .btn-success {
+            background-color: #4CAF50;
+        }
+        
+        .btn-success:hover {
+            background-color: #388E3C;
+        }
+        
+        .btn-text {
+            background: none;
+            color: #00C3B5;
+            padding: 0;
+            text-decoration: underline;
+            min-width: auto;
+        }
+        
+        .btn-text:hover {
+            color: #fff;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 25px;
+            gap: 8px;
+        }
+        
+        .pagination a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 35px;
+            height: 35px;
+            padding: 5px 10px;
+            background-color: rgba(0, 195, 181, 0.15);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid rgba(0, 195, 181, 0.3);
+        }
+        
+        .pagination a.active {
+            background-color: #00C3B5;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 195, 181, 0.3);
+        }
+        
+        .pagination a:hover:not(.active) {
+            background-color: rgba(0, 195, 181, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #0a1f2e;
+            border: 1px solid #00C3B5;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 700px; /* Increased from 500px to 700px */
+            max-height: 95vh;
+            position: relative;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            overflow-y: auto;
+            scrollbar-color: transparent transparent;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+        }
+        
+        .close-modal:hover {
+            color: #fff;
+        }
+        
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ddd;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 4px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .user-details {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .user-details h4 {
+            margin-bottom: 15px;
+            color: #00C3B5;
+        }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            width: 150px;
+            color: #ccc;
+        }
+        
+        .detail-value {
+            flex-grow: 1;
+            color: #fff;
+        }
+        
+        .detail-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .detail-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-right: 10px;
+        }
+        
+        .detail-tab.active {
+            border-bottom: 2px solid #00C3B5;
+            color: #00C3B5;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .stats-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: rgba(0, 195, 181, 0.1);
+            border: 1px solid rgba(0, 195, 181, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .stat-card h5 {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card p {
+            font-size: 24px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .alert-success {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .alert-danger {
+            background-color: rgba(244, 67, 54, 0.2);
+            border-left: 4px solid #F44336;
+        }
+
+        /* TOTP tab styles */
+        .totp-container {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        #qrcode {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 15px auto;
+        }
+        
+        .totp-qr-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .totp-instructions {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+        
+        .totp-key {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+        
+        .totp-actions {
+            margin-top: 20px;
+        }
+
+        /* Profile picture styles */
+        .profile-pic {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #00C3B5;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .profile-pic:hover {
+            transform: scale(1.15);
+            border-color: #fff;
+            box-shadow: 0 5px 15px rgba(0, 195, 181, 0.5);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+{{ super() }}
+    <div class="container">
+            <!-- Main Content -->
+            <main>
+                <header>
+                    <h2>User Management</h2>
+                    <div class="admin-info">
+                        <span>Welcome, Admin</span>
+                    </div>
+                </header>
+    
+                <div class="admin-container">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <div class="search-bar">
+                        <input type="text" id="userSearch" placeholder="Search by username, email or name...">
+                        <button type="button" id="searchBtn"><i class='bx bx-search'></i> Search</button>
+                    </div>
+                    
+                    <div class="filters-row">
+                        <div class="user-type-tabs">
+                            <button class="btn btn-primary active" id="regular-users-tab">Regular Users</button>
+                            <button class="btn" id="admin-users-tab">Admin Users</button>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="statusFilter">Status:</label>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="all">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="banned">Banned</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="roleFilter">Role:</label>
+                            <select id="roleFilter" class="filter-select">
+                                <option value="all">All Roles</option>
+                                <option value="admin">Admin</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="sortBy">Sort By:</label>
+                            <select id="sortBy" class="filter-select">
+                                <option value="username">Username</option>
+                                <option value="created">Date Created</option>
+                                <option value="activity">Last Activity</option>
+                                <option value="score">Score Count</option>
+                            </select>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="addUserBtn"><i class='bx bx-plus'></i> Add User</button>
+                            <button class="btn btn-warning" id="bulkActionsBtn"><i class='bx bx-list-ul'></i> Bulk Actions</button>
+                        </div>
+                    </div>
+                    
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>Profile</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Created</th>
+                                <th>Last Active</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                                <th>Scores</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_stat in user_stats %}
+                            <tr>
+                                <td><input type="checkbox" class="user-select" data-id="{{ user_stat.user.id }}"></td>
+                                <td>
+                                    <img src="{{ url_for('static', filename='img/profiles/' + user_stat.user.profile_pic) if user_stat.user.profile_pic else url_for('static', filename='img/Logo.png') }}" 
+                                         alt="{{ user_stat.user.username }}" 
+                                         class="profile-pic"
+                                         title="User ID: {{ user_stat.user.id }}">
+                                </td>
+                                <td>{{ user_stat.user.username }}</td>
+                                <td>{{ user_stat.user.email }}</td>
+                                <td>{{ user_stat.user.created_at.strftime('%Y-%m-%d') if user_stat.user.created_at else 'N/A' }}</td>
+                                <td>{{ user_stat.user.last_active.strftime('%Y-%m-%d') if user_stat.user.last_active else 'Never' }}</td>
+                                <td>
+                                    <span class="status {{ user_stat.user.status|default('inactive')|lower }}">
+                                        {{ user_stat.user.status|default('Inactive') }}
+                                    </span>
+                                </td>
+                                <td>{% if user_stat.user.is_admin %}Admin{% else %}User{% endif %}</td>
+                                <td>{{ user_stat.scores_count }} ({{ user_stat.highest_score }})</td>
+                                <td>
+                                    <div class="user-actions">
+                                        <a href="#" class="btn-text view-user" data-id="{{ user_stat.user.id }}">View</a> |
+                                        <a href="#" class="btn-text edit-user" data-id="{{ user_stat.user.id }}">Edit</a> |
+                                        <a href="#" class="btn-text delete-user" data-id="{{ user_stat.user.id }}">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <!-- Admin Users Table -->
+                    <table id="adminsTable" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllAdmins"></th>
+                                <th>Profile</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Created</th>
+                                <th>Last Active</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for admin in admins %}
+                            <tr>
+                                <td><input type="checkbox" class="admin-select" data-id="{{ admin.id }}"></td>
+                                <td>
+                                    <img src="{{ url_for('static', filename='img/profiles/' + admin.profile_pic) if admin.profile_pic else url_for('static', filename='img/Logo.png') }}" 
+                                         alt="{{ admin.username }}" 
+                                         class="profile-pic"
+                                         title="Admin ID: {{ admin.id }}">
+                                </td>
+                                <td>{{ admin.username }}</td>
+                                <td>{{ admin.email }}</td>
+                                <td>{{ admin.created_at.strftime('%Y-%m-%d') if admin.created_at else 'N/A' }}</td>
+                                <td>{{ admin.last_login.strftime('%Y-%m-%d') if admin.last_login else 'Never' }}</td>
+                                <td>{{ admin.role if admin.role else 'Admin' }}</td>
+                                <td>
+                                    <div class="user-actions">
+                                        <a href="#" class="btn-text view-admin" data-id="{{ admin.id }}">View</a> |
+                                        <a href="{{ url_for('user.edit_admin', admin_id=admin.id) }}" class="btn-text edit-user">Edit</a> |
+                                        {% if admins|length > 1 %}
+                                        <a href="#" class="btn-text delete-admin" data-id="{{ admin.id }}">Delete</a>
+                                        {% else %}
+                                        <span class="btn-text disabled" title="Cannot delete the only admin">Delete</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        <a href="#">&laquo;</a>
+                        <a href="#" class="active">1</a>
+                        <a href="#">2</a>
+                        <a href="#">3</a>
+                        <a href="#">4</a>
+                        <a href="#">5</a>
+                        <a href="#">&raquo;</a>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- Add User Modal -->
+        <div id="addUserModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeAddUser">&times;</span>
+                <h3>Add New User</h3>
+                <form id="addUserForm" method="POST" action="{{ url_for('user.add_user') }}">
+                    <div class="form-group">
+                        <label for="userType">User Type:</label>
+                        <select id="userType" name="userType" class="filter-select">
+                            <option value="regular">Regular User</option>
+                            <option value="admin">Admin User</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUsername">Username:</label>
+                        <input type="text" id="newUsername" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newEmail">Email:</label>
+                        <input type="email" id="newEmail" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Password:</label>
+                        <input type="password" id="newPassword" name="password" required>
+                    </div>
+                    <div class="form-group admin-field" style="display:none;">
+                        <label for="confirmPassword">Confirm Password:</label>
+                        <input type="password" id="confirmPassword" name="confirm_password">
+                    </div>
+                    <div class="form-group">
+                        <label for="newStatus">Status:</label>
+                        <select id="newStatus" name="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger" id="cancelAddUser">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Edit User Modal -->
+        <div id="editUserModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeEditUser">&times;</span>
+                <h3 id="editModalTitle"><i class='bx bxs-edit'></i> Edit User</h3>
+                <form id="editUserForm" method="POST">
+                    <input type="hidden" id="editUserId" name="user_id">
+                    <input type="hidden" id="isEditingAdmin" name="is_admin" value="false">
+                    <div class="form-group">
+                        <label for="editUsername">Username:</label>
+                        <input type="text" id="editUsername" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmail">Email:</label>
+                        <input type="email" id="editEmail" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="editPassword">Password (leave blank to keep current):</label>
+                        <input type="password" id="editPassword" name="password" placeholder="Enter new password">
+                        <small style="color: #aaa;">Only fill this if you want to change the user's password</small>
+                    </div>
+                    <div class="form-group user-role-field">
+                        <label for="editRole">User Type:</label>
+                        <select id="editRole" name="is_admin">
+                            <option value="false">User</option>
+                            <option value="true">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group admin-role-field" style="display:none;">
+                        <label for="editAdminRole">Admin Role:</label>
+                        <select id="editAdminRole" name="role">
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editStatus">Status:</label>
+                        <select id="editStatus" name="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="banned">Banned</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelEditUser">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- View User Modal -->
+        <div id="viewUserModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeViewUser">&times;</span>
+                <h3>User Details</h3>
+                
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <h5>Total Quizzes</h5>
+                        <p id="userTotalQuizzes">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h5>Avg. Score</h5>
+                        <p id="userAvgScore">0%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h5>Account Age</h5>
+                        <p id="userAccountAge">0 days</p>
+                    </div>
+                </div>
+                
+                <div class="detail-tabs">
+                    <div class="detail-tab active" data-tab="info">Basic Info</div>
+                    <div class="detail-tab" data-tab="totp">Two-Factor Auth</div>
+                    <div class="detail-tab" data-tab="scores">Scores</div>
+                    <div class="detail-tab" data-tab="activity">Activity Log</div>
+                </div>
+                
+                <div id="infoTab" class="tab-content active">
+                    <div class="user-details">
+                        <div class="detail-row">
+                            <div class="detail-label">ID:</div>
+                            <div class="detail-value" id="userId"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Username:</div>
+                            <div class="detail-value" id="username"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Email:</div>
+                            <div class="detail-value" id="userEmail"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Status:</div>
+                            <div class="detail-value" id="userStatus"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Role:</div>
+                            <div class="detail-value" id="userRole"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Created At:</div>
+                            <div class="detail-value" id="userCreated"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Last Active:</div>
+                            <div class="detail-value" id="userLastActive"></div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary edit-this-user" >Edit User</button>
+                        <button type="button" class="btn btn-danger" id="closeUserView">Close</button>
+                    </div>
+                </div>
+                
+                <div id="totpTab" class="tab-content">
+                    <div class="user-details">
+                        <div class="totp-container">
+                            <h4>Two-Factor Authentication</h4>
+                            <div class="totp-status">
+                                <div class="detail-row">
+                                    <div class="detail-label">Status:</div>
+                                    <div class="detail-value" id="totpStatus">Not Set</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">TOTP Key:</div>
+                                    <div class="detail-value" id="totpKey">-</div>
+                                </div>
+                            </div>
+                            
+                            <div class="totp-qr-container" id="totpQrContainer">
+                                <h5>QR Code for Authenticator App</h5>
+                                <div id="qrcode"></div>
+                                <p class="totp-instructions">Scan this QR code with an authenticator app (like Google Authenticator, Microsoft Authenticator, or Authy) to enable two-factor authentication for this account.</p>
+                            </div>
+                            
+                            <div class="form-actions totp-actions">
+                                <button type="button" class="btn btn-warning" id="resetTotpBtn">Reset TOTP Key</button>
+                                <button type="button" class="btn btn-danger" id="disableTotpBtn">Disable 2FA</button>
+                                <button type="button" class="btn btn-primary" id="enableTotpBtn">Enable 2FA</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="scoresTab" class="tab-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Score ID</th>
+                                <th>Category</th>
+                                <th>Score</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userScores">
+                            <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="activityTab" class="tab-content">
+                    <div id="userActivityLog">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteUserModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeDeleteUser">&times;</span>
+                <h3>Confirm Delete</h3>
+                <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+                <p>Username: <strong id="deleteUserName"></strong></p>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" id="cancelDeleteUser">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteUser">Delete</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bulk Actions Modal -->
+        <div id="bulkActionsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeBulkActions">&times;</span>
+                <h3>Bulk Actions</h3>
+                <p><span id="selectedCount">0</span> users selected</p>
+                <div class="form-group">
+                    <label for="bulkAction">Action:</label>
+                    <select id="bulkAction" name="bulkAction">
+                        <option value="">Select an action...</option>
+                        <option value="activate">Set as Active</option>
+                        <option value="deactivate">Set as Inactive</option>
+                        <option value="ban">Ban Users</option>
+                        <option value="delete">Delete Users</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-danger" id="cancelBulkAction">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="applyBulkAction">Apply</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Edit Admin Modal -->
+        <div id="editAdminModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeEditAdmin">&times;</span>
+                <h3>Edit Admin User</h3>
+                <form id="editAdminForm" method="POST">
+                    <input type="hidden" id="editAdminId" name="admin_id">
+                    <div class="form-group">
+                        <label for="adminUsername">Username:</label>
+                        <input type="text" id="adminUsername" name="username" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminEmail">Email:</label>
+                        <input type="email" id="adminEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPassword">New Password (leave blank to keep current):</label>
+                        <input type="password" id="adminPassword" name="password">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminRole">Role:</label>
+                        <select id="adminRole" name="role">
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger" id="cancelEditAdmin">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Admin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle between Regular Users and Admin Users tabs
+            const regularUsersTab = document.getElementById('regular-users-tab');
+            const adminUsersTab = document.getElementById('admin-users-tab');
+            const usersTable = document.getElementById('usersTable');
+            const adminsTable = document.getElementById('adminsTable');
+            
+            regularUsersTab.addEventListener('click', function() {
+                regularUsersTab.classList.add('active');
+                adminUsersTab.classList.remove('active');
+                usersTable.style.display = '';
+                adminsTable.style.display = 'none';
+            });
+            
+            adminUsersTab.addEventListener('click', function() {
+                adminUsersTab.classList.add('active');
+                regularUsersTab.classList.remove('active');
+                adminsTable.style.display = '';
+                usersTable.style.display = 'none';
+            });
+            
+            // Modal functionality
+            const modals = {
+                add: document.getElementById('addUserModal'),
+                edit: document.getElementById('editUserModal'),
+                view: document.getElementById('viewUserModal'),
+                delete: document.getElementById('deleteUserModal'),
+                bulk: document.getElementById('bulkActionsModal')
+            };
+            
+            // Open modals
+            document.getElementById('addUserBtn').addEventListener('click', () => {
+                modals.add.style.display = 'flex';
+            });
+            
+            document.getElementById('bulkActionsBtn').addEventListener('click', () => {
+                const selectedUsers = document.querySelectorAll('.user-select:checked');
+                document.getElementById('selectedCount').textContent = selectedUsers.length;
+                if (selectedUsers.length > 0) {
+                    modals.bulk.style.display = 'flex';
+                } else {
+                    alert('Please select at least one user.');
+                }
+            });
+            
+            // Close modals
+            document.getElementById('closeAddUser').addEventListener('click', () => {
+                modals.add.style.display = 'none';
+            });
+            
+            document.getElementById('cancelAddUser').addEventListener('click', () => {
+                modals.add.style.display = 'none';
+            });
+            
+            document.getElementById('closeEditUser').addEventListener('click', () => {
+                modals.edit.style.display = 'none';
+            });
+            
+            document.getElementById('cancelEditUser').addEventListener('click', () => {
+                modals.edit.style.display = 'none';
+            });
+            
+            document.getElementById('closeViewUser').addEventListener('click', () => {
+                modals.view.style.display = 'none';
+            });
+            
+            document.getElementById('closeUserView').addEventListener('click', () => {
+                modals.view.style.display = 'none';
+            });
+            
+            document.getElementById('closeDeleteUser').addEventListener('click', () => {
+                modals.delete.style.display = 'none';
+            });
+            
+            document.getElementById('cancelDeleteUser').addEventListener('click', () => {
+                modals.delete.style.display = 'none';
+            });
+            
+            document.getElementById('closeBulkActions').addEventListener('click', () => {
+                modals.bulk.style.display = 'none';
+            });
+            
+            document.getElementById('cancelBulkAction').addEventListener('click', () => {
+                modals.bulk.style.display = 'none';
+            });
+            
+            // Tab functionality in the view user modal
+            const tabs = document.querySelectorAll('.detail-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs and contents
+                    document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to current tab and content
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}Tab`).classList.add('active');
+                });
+            });
+            
+            // Edit user buttons
+            document.querySelectorAll('.edit-user').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const userId = btn.dataset.id;
+                    fetchUserAndPopulateEditForm(userId);
+                });
+            });
+            
+            // View user buttons
+            document.querySelectorAll('.view-user').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const userId = btn.dataset.id;
+                    fetchUserAndShowDetails(userId);
+                });
+            });
+            
+            // Delete user buttons
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const userId = btn.dataset.id;
+                    const row = btn.closest('tr');
+                    const username = row.cells[2].textContent;
+                    
+                    document.getElementById('deleteUserName').textContent = username;
+                    document.getElementById('confirmDeleteUser').dataset.userId = userId;
+                    modals.delete.style.display = 'flex';
+                });
+            });
+            
+            // Select all checkbox
+            document.getElementById('selectAll').addEventListener('change', function() {
+                document.querySelectorAll('.user-select').forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+            
+            // Filter functionality
+            document.getElementById('statusFilter').addEventListener('change', filterUsers);
+            document.getElementById('roleFilter').addEventListener('change', filterUsers);
+            document.getElementById('sortBy').addEventListener('change', sortUsers);
+            
+            // Search functionality
+            document.getElementById('searchBtn').addEventListener('click', searchUsers);
+            document.getElementById('userSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchUsers();
+                }
+            });
+            
+            // Functions to handle user actions
+            function fetchUserAndPopulateEditForm(userId) {
+                // In a real application, fetch user data from the server
+                // For this example, we'll get it from the table row
+                const row = document.querySelector(`tr [data-id="${userId}"]`).closest('tr');
+                
+                document.getElementById('editUserId').value = userId;
+                document.getElementById('editUsername').value = row.cells[2].textContent;
+                document.getElementById('editEmail').value = row.cells[3].textContent;
+                
+                // Reset password field
+                document.getElementById('editPassword').value = '';
+                
+                // Check if user is admin
+                const isAdmin = row.cells[7].textContent.trim().toLowerCase() === 'admin';
+                document.getElementById('isEditingAdmin').value = isAdmin.toString();
+                
+                if (isAdmin) {
+                    document.getElementById('editRole').value = 'true';
+                    document.getElementById('editModalTitle').textContent = 'Edit Admin User';
+                    document.querySelector('.admin-role-field').style.display = '';
+                    document.querySelector('.user-role-field').style.display = 'none';
+                    
+                    // Set form action for admin user
+                    document.getElementById('editUserForm').setAttribute('action', `/users/edit_admin/${userId}`);
+                } else {
+                    document.getElementById('editRole').value = 'false';
+                    document.getElementById('editModalTitle').textContent = 'Edit User';
+                    document.querySelector('.admin-role-field').style.display = 'none';
+                    document.querySelector('.user-role-field').style.display = '';
+                    
+                    // Set form action for regular user
+                    document.getElementById('editUserForm').setAttribute('action', `/users/edit/${userId}`);
+                }
+                
+                // Get status from the table
+                const status = row.querySelector('.status') ? 
+                    row.querySelector('.status').textContent.trim().toLowerCase() : 'active';
+                document.getElementById('editStatus').value = status;
+                
+                modals.edit.style.display = 'flex';
+            }
+
+            // Function to handle editing an admin user
+            function fetchAdminAndPopulateEditForm(adminId) {
+                // Get data from the admins table row
+                const row = document.querySelector(`#adminsTable tr [data-id="${adminId}"]`).closest('tr');
+                
+                document.getElementById('editUserId').value = adminId;
+                document.getElementById('editUsername').value = row.cells[2].textContent;
+                document.getElementById('editEmail').value = row.cells[3].textContent;
+                document.getElementById('editPassword').value = '';
+                
+                // Admin specific settings
+                document.getElementById('isEditingAdmin').value = 'true';
+                document.getElementById('editModalTitle').textContent = 'Edit Admin User';
+                document.querySelector('.admin-role-field').style.display = '';
+                document.querySelector('.user-role-field').style.display = 'none';
+                document.querySelector('.user-status-field').style.display = 'none';
+                
+                // Set the admin role
+                const adminRole = row.cells[6].textContent.trim().toLowerCase();
+                document.getElementById('editAdminRole').value = adminRole.includes('super') ? 'super_admin' : 'admin';
+                
+                // Set form action for admin user
+                document.getElementById('editUserForm').setAttribute('action', `/users/edit_admin/${adminId}`);
+                
+                modals.edit.style.display = 'flex';
+            }
+            
+            // TOTP functionality in the user view
+            function updateTotpSection(userId) {
+                fetch(`/users/get_totp_info/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const totpStatus = document.getElementById('totpStatus');
+                        const totpKeyElement = document.getElementById('totpKey');
+                        const totpQrContainer = document.getElementById('totpQrContainer');
+                        const enableTotpBtn = document.getElementById('enableTotpBtn');
+                        const resetTotpBtn = document.getElementById('resetTotpBtn');
+                        const disableTotpBtn = document.getElementById('disableTotpBtn');
+
+                        // Update TOTP status
+                        if (data.has_totp) {
+                            totpStatus.textContent = 'Enabled';
+                            totpStatus.style.color = '#4CAF50';
+                            totpKeyElement.innerHTML = `<span class="totp-key">${data.totp_key}</span>`;
+                            
+                            // Update QR code
+                            const qrImg = document.createElement('img');
+                            qrImg.src = data.qr_code_path;
+                            qrImg.alt = 'TOTP QR Code';
+                            qrImg.style.maxWidth = '200px';
+                            
+                            const qrContainer = document.getElementById('qrcode');
+                            qrContainer.innerHTML = '';
+                            qrContainer.appendChild(qrImg);
+                            
+                            // Update button states
+                            enableTotpBtn.style.display = 'none';
+                            resetTotpBtn.style.display = '';
+                            disableTotpBtn.style.display = '';
+                            totpQrContainer.style.display = '';
+                        } else {
+                            totpStatus.textContent = 'Not Set';
+                            totpStatus.style.color = '#F44336';
+                            totpKeyElement.textContent = '-';
+                            
+                            // Clear QR code
+                            document.getElementById('qrcode').innerHTML = '';
+                            
+                            // Update button states
+                            enableTotpBtn.style.display = '';
+                            resetTotpBtn.style.display = 'none';
+                            disableTotpBtn.style.display = 'none';
+                            totpQrContainer.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Error fetching TOTP info:', error));
+            }
+            
+            // Modify fetchUserAndShowDetails to include TOTP info
+            function fetchUserAndShowDetails(userId) {
+                // In a real application, fetch user data from the server
+                // For this example, we'll get it from the table row
+                const row = document.querySelector(`tr [data-id="${userId}"]`).closest('tr');
+                
+                // Basic user info from the table
+                const username = row.cells[2].textContent;
+                
+                // Populate user information fields
+                document.getElementById('userId').textContent = userId;
+                document.getElementById('username').textContent = username;
+                document.getElementById('userEmail').textContent = row.cells[3].textContent;
+                document.getElementById('userCreated').textContent = row.cells[4].textContent;
+                document.getElementById('userLastActive').textContent = row.cells[5].textContent;
+                document.getElementById('userStatus').textContent = row.querySelector('.status').textContent.trim();
+                document.getElementById('userRole').textContent = row.cells[7].textContent;
+                
+                // Update TOTP section with data from the server
+                updateTotpSection(userId);
+                
+                // Calculate account age (placeholder)
+                const createdDate = new Date(row.cells[4].textContent);
+                const today = new Date();
+                const diffTime = Math.abs(today - createdDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                document.getElementById('userAccountAge').textContent = `${diffDays} days`;
+                
+                // Placeholder data for the tabs
+                document.getElementById('userTotalQuizzes').textContent = Math.floor(Math.random() * 20);
+                document.getElementById('userAvgScore').textContent = `${Math.floor(Math.random() * 100)}%`;
+                
+                // Rest of the existing code for scores and activity tabs...
+                
+                modals.view.style.display = 'flex';
+                
+                // Set up TOTP action buttons
+                document.getElementById('enableTotpBtn').onclick = function() {
+                    fetch(`/users/generate_totp/${userId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            updateTotpSection(userId);
+                            alert('TOTP has been enabled for this user.');
+                        } else {
+                            alert('Error enabling TOTP: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error enabling TOTP:', error);
+                        alert('An error occurred while enabling TOTP');
+                    });
+                };
+                
+                document.getElementById('resetTotpBtn').onclick = function() {
+                    if (confirm('Are you sure you want to reset this user\'s TOTP key? They will need to reconfigure their authenticator app.')) {
+                        fetch(`/users/generate_totp/${userId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                updateTotpSection(userId);
+                                alert('TOTP key has been reset. User will need to reconfigure their authenticator app.');
+                            } else {
+                                alert('Error resetting TOTP key: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error resetting TOTP:', error);
+                            alert('An error occurred while resetting TOTP');
+                        });
+                    }
+                };
+                
+                document.getElementById('disableTotpBtn').onclick = function() {
+                    if (confirm('Are you sure you want to disable two-factor authentication for this user?')) {
+                        fetch(`/users/disable_totp/${userId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                updateTotpSection(userId);
+                                alert('TOTP has been disabled for this user.');
+                            } else {
+                                alert('Error disabling TOTP: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error disabling TOTP:', error);
+                            alert('An error occurred while disabling TOTP');
+                        });
+                    }
+                };
+            }
+            
+            function searchUsers() {
+                const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+                
+                const rows = document.querySelectorAll('#usersTable tbody tr');
+                
+                rows.forEach(row => {
+                    const username = row.cells[2].textContent.toLowerCase();
+                    const email = row.cells[3].textContent.toLowerCase();
+                    
+                    if (username.includes(searchTerm) || email.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+            
+            function filterUsers() {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const roleFilter = document.getElementById('roleFilter').value;
+                
+                const rows = document.querySelectorAll('#usersTable tbody tr');
+                
+                rows.forEach(row => {
+                    const status = row.querySelector('.status').textContent.trim().toLowerCase();
+                    const role = row.cells[7].textContent.toLowerCase();
+                    
+                    const matchesStatus = statusFilter === 'all' || status === statusFilter;
+                    const matchesRole = roleFilter === 'all' || 
+                                      (roleFilter === 'admin' && role.includes('admin')) ||
+                                      (roleFilter === 'user' && role.includes('user'));
+                    
+                    if (matchesStatus && matchesRole) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+            
+            function sortUsers() {
+                const sortBy = document.getElementById('sortBy').value;
+                
+                const rows = Array.from(document.querySelectorAll('#usersTable tbody tr'));
+                const tbody = document.querySelector('#usersTable tbody');
+                
+                rows.sort((a, b) => {
+                    let aValue, bValue;
+                    
+                    switch(sortBy) {
+                        case 'username':
+                            aValue = a.cells[2].textContent;
+                            bValue = b.cells[2].textContent;
+                            return aValue.localeCompare(bValue);
+                        case 'created':
+                            aValue = new Date(a.cells[4].textContent);
+                            bValue = new Date(b.cells[4].textContent);
+                            return bValue - aValue; // Newest first
+                        case 'activity':
+                            aValue = a.cells[5].textContent === 'Never' ? new Date(0) : new Date(a.cells[5].textContent);
+                            bValue = b.cells[5].textContent === 'Never' ? new Date(0) : new Date(b.cells[5].textContent);
+                            return bValue - aValue; // Most recent first
+                        case 'score':
+                            // In a real app, this would be based on actual score counts
+                            return 0;
+                        default:
+                            return 0;
+                    }
+                });
+                
+                // Remove existing rows
+                while (tbody.firstChild) {
+                    tbody.removeChild(tbody.firstChild);
+                }
+                
+                // Add sorted rows
+                rows.forEach(row => tbody.appendChild(row));
+            }
+            
+            // Form submission handlers
+            document.getElementById('addUserForm').addEventListener('submit', function(e) {
+                // Validate passwords match for admin users
+                const userType = document.getElementById('userType').value;
+                if (userType === 'admin') {
+                    const password = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    if (password !== confirmPassword) {
+                        e.preventDefault();
+                        alert('Passwords do not match!');
+                        return false;
+                    }
+                }
+            });
+
+            // Add User Type toggle in Add User form
+            document.getElementById('userType').addEventListener('change', function() {
+                const adminFields = document.querySelectorAll('.admin-field');
+                const regularFields = document.querySelectorAll('.regular-field');
+                const addUserForm = document.getElementById('addUserForm');
+                
+                if (this.value === 'admin') {
+                    // Show admin fields, hide regular user fields
+                    adminFields.forEach(field => field.style.display = '');
+                    regularFields.forEach(field => field.style.display = 'none');
+                    // Change form action to admin creation endpoint
+                    addUserForm.action = "{{ url_for('user.add_admin') }}";
+                } else {
+                    // Show regular fields, hide admin fields
+                    adminFields.forEach(field => field.style.display = 'none');
+                    regularFields.forEach(field => field.style.display = '');
+                    // Change form action to regular user creation endpoint
+                    addUserForm.action = "{{ url_for('user.add_user') }}";
+                }
+            });
+            
+            document.getElementById('editUserForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const userId = document.getElementById('editUserId').value;
+                const isAdmin = document.getElementById('isEditingAdmin').value === 'true';
+                let formAction;
+                
+                if (isAdmin) {
+                    formAction = `/users/edit_admin/${userId}`;
+                } else {
+                    formAction = `/users/edit/${userId}`;
+                }
+                
+                // Get form data
+                const formData = new FormData(this);
+                
+                // Send the form data to the server
+                fetch(formAction, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Network response was not ok');
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('User updated successfully');
+                        window.location.reload(); // Reload the page to see changes
+                    } else {
+                        alert('Error updating user: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating user:', error);
+                    alert('An error occurred while updating the user');
+                })
+                .finally(() => {
+                    modals.edit.style.display = 'none';
+                });
+            });
+            
+            document.getElementById('confirmDeleteUser').addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                const adminId = this.dataset.adminId;
+                const isAdmin = this.dataset.isAdmin === 'true';
+                
+                // Create a form to submit the request as POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                
+                if (isAdmin) {
+                    form.action = `/users/admins/delete/${adminId}`;
+                } else {
+                    form.action = `/users/delete/${userId}`;
+                }
+                
+                // Add CSRF token if your Flask app uses it
+                // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                // const csrfInput = document.createElement('input');
+                // csrfInput.type = 'hidden';
+                // csrfInput.name = 'csrf_token';
+                // csrfInput.value = csrfToken;
+                // form.appendChild(csrfInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+                
+                modals.delete.style.display = 'none';
+            });
+            
+            document.getElementById('applyBulkAction').addEventListener('click', function() {
+                const action = document.getElementById('bulkAction').value;
+                const selectedUsers = document.querySelectorAll('.user-select:checked');
+                const userIds = Array.from(selectedUsers).map(checkbox => checkbox.dataset.id);
+                
+                if (!action) {
+                    alert('Please select an action to perform.');
+                    return;
+                }
+                
+                // In a real application, this would send data to the server
+                alert(`Action "${action}" would be applied to ${userIds.length} users`);
+                modals.bulk.style.display = 'none';
+            });
+            
+            // "Edit this user" button in view modal
+            document.querySelector('.edit-this-user').addEventListener('click', function() {
+                const userId = document.getElementById('userId').textContent;
+                modals.view.style.display = 'none';
+                fetchUserAndPopulateEditForm(userId);
+            });
+
+            // View admin buttons
+            document.querySelectorAll('.view-admin').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const adminId = btn.dataset.id;
+                    fetchAdminAndShowDetails(adminId);
+                });
+            });
+            
+            // Edit admin buttons
+            document.querySelectorAll('a[href^="{{ url_for("user.edit_admin", admin_id=0) }}'.replace('/0', '/')).forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const adminId = btn.href.split('/').pop();
+                    openEditAdminModal(adminId);
+                });
+            });
+
+            // Close and cancel for edit admin modal
+            document.getElementById('closeEditAdmin').addEventListener('click', () => {
+                document.getElementById('editAdminModal').style.display = 'none';
+            });
+            
+            document.getElementById('cancelEditAdmin').addEventListener('click', () => {
+                document.getElementById('editAdminModal').style.display = 'none';
+            });
+
+            // Function to open and populate the edit admin modal
+            function openEditAdminModal(adminId) {
+                // Find the admin in the table
+                const row = document.querySelector(`#adminsTable tr td input[data-id="${adminId}"]`).closest('tr');
+                
+                // Populate the form
+                document.getElementById('editAdminId').value = adminId;
+                document.getElementById('adminUsername').value = row.cells[2].textContent.trim();
+                document.getElementById('adminEmail').value = row.cells[3].textContent.trim();
+                document.getElementById('adminPassword').value = ''; // Reset password field
+                
+                // Set the admin role
+                const role = row.cells[6].textContent.trim().toLowerCase();
+                const roleSelect = document.getElementById('adminRole');
+                
+                for (let i = 0; i < roleSelect.options.length; i++) {
+                    if (roleSelect.options[i].value.toLowerCase() === role) {
+                        roleSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                // Set form action
+                document.getElementById('editAdminForm').setAttribute('action', `{{ url_for('user.edit_admin', admin_id=0) }}`.replace('0', adminId));
+                
+                // Show the modal
+                document.getElementById('editAdminModal').style.display = 'flex';
+            }
+
+            // Function to play click sound
+            function playClickSound() {
+                const audio = new Audio('click-sound.mp3');
+                audio.play();
+            }
+
+            // Handle edit user form cancel button
+            document.getElementById('cancelEditUser').addEventListener('click', function(e) {
+                e.preventDefault();
+                modals.edit.style.display = 'none';
+                playClickSound();
+            });
+
+            // Add sound to edit modal buttons
+            document.querySelectorAll('#editUserModal button, #editUserModal .close-modal').forEach(element => {
+                element.addEventListener('click', playClickSound);
+            });
+
+            // Handle edit admin form submission
+            document.getElementById('editAdminForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const adminId = document.getElementById('editAdminId').value;
+                const formAction = this.getAttribute('action');
+                const formData = new FormData(this);
+                
+                // Send the form data to the server
+                fetch(formAction, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.status === 'success') {
+                        alert('Admin user updated successfully');
+                        window.location.reload(); // Reload the page to see changes
+                    } else if (data) {
+                        alert('Error updating admin user: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating admin user:', error);
+                    // If we got a redirect, it's probably successful
+                    if (error instanceof TypeError && error.message.includes("JSON")) {
+                        window.location.reload();
+                    } else {
+                        alert('An error occurred while updating the admin user');
+                    }
+                })
+                .finally(() => {
+                    document.getElementById('editAdminModal').style.display = 'none';
+                });
+            });
+            
+            // Delete admin buttons
+            document.querySelectorAll('.delete-admin').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const adminId = btn.dataset.id;
+                    const row = btn.closest('tr');
+                    const username = row.cells[2].textContent;
+                    
+                    document.getElementById('deleteUserName').textContent = username + ' (Admin)';
+                    document.getElementById('confirmDeleteUser').dataset.adminId = adminId;
+                    document.getElementById('confirmDeleteUser').dataset.isAdmin = 'true';
+                    modals.delete.style.display = 'flex';
+                });
+            });
+            
+            // Select all admins checkbox
+            document.getElementById('selectAllAdmins').addEventListener('change', function() {
+                document.querySelectorAll('.admin-select').forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+            
+            // Function to fetch admin data for viewing
+            function fetchAdminAndShowDetails(adminId) {
+                // In a real application, fetch admin data from the server
+                // For this example, we'll get it from the table row
+                const row = document.querySelector(`#adminsTable tr [data-id="${adminId}"]`).closest('tr');
+                
+                document.getElementById('userId').textContent = adminId + ' (Admin)';
+                document.getElementById('username').textContent = row.cells[2].textContent;
+                document.getElementById('userEmail').textContent = row.cells[3].textContent;
+                document.getElementById('userCreated').textContent = row.cells[4].textContent;
+                document.getElementById('userLastActive').textContent = row.cells[5].textContent;
+                document.getElementById('userStatus').textContent = 'Active';
+                document.getElementById('userRole').textContent = row.cells[6].textContent;
+                
+                // Admin-specific info (shouldn't have quizzes)
+                document.getElementById('userTotalQuizzes').textContent = "N/A";
+                document.getElementById('userAvgScore').textContent = "N/A";
+                
+                // Calculate account age
+                const createdDate = new Date(row.cells[4].textContent);
+                const today = new Date();
+                const diffTime = Math.abs(today - createdDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                document.getElementById('userAccountAge').textContent = `${diffDays} days`;
+                
+                // For admins, show login activity instead of scores
+                document.getElementById('scoresTab').innerHTML = '<p>Score history not applicable for admin users.</p>';
+                
+                // Show admin activity log
+                let activityHTML = '';
+                const activities = ['Logged in', 'Updated user', 'Added question', 'Graded essay'];
+                
+                for (let i = 0; i < 5; i++) {
+                    const activity = activities[Math.floor(Math.random() * activities.length)];
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    
+                    activityHTML += `
+                        <div class="log-entry">
+                            <div class="log-icon">
+                                <i class='bx bx-shield'></i>
+                            </div>
+                            <div class="log-content">
+                                <div>${activity}</div>
+                                <div class="log-time">${date.toISOString().substring(0, 10)} ${date.toTimeString().substring(0, 8)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('userActivityLog').innerHTML = activityHTML;
+                
+                modals.view.style.display = 'flex';
+            }
+            
+            // Update the confirmDeleteUser click handler to handle both users and admins
+            document.getElementById('confirmDeleteUser').addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                const adminId = this.dataset.adminId;
+                const isAdmin = this.dataset.isAdmin === 'true';
+                
+                // Create a form to submit the request as POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                
+                if (isAdmin) {
+                    form.action = `/users/admins/delete/${adminId}`;
+                } else {
+                    form.action = `/users/delete/${userId}`;
+                }
+                
+                // Add CSRF token if your Flask app uses it
+                // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                // const csrfInput = document.createElement('input');
+                // csrfInput.type = 'hidden';
+                // csrfInput.name = 'csrf_token';
+                // csrfInput.value = csrfToken;
+                // form.appendChild(csrfInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+                
+                modals.delete.style.display = 'none';
+            });
+        });
+    </script>
+{% endblock %}

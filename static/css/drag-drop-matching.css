@@ -1,0 +1,280 @@
+/* Cisco-style Matching Question Interface */
+.cisco-matching-container {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    max-width: 100%; /* Changed from 900px to 100% to prevent overflow */
+    margin: 0 auto 30px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+
+.cisco-instructions {
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    background-color: #f0f7ff;
+    border-left: 4px solid #0084c2;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+}
+
+.cisco-matching-area {
+    display: flex;
+    gap: 20px; /* Reduced from 24px */
+    margin-bottom: 20px;
+    flex-wrap: nowrap;
+}
+
+.cisco-column {
+    flex: 1;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-width: 0; /* Important to prevent flex items from overflowing */
+    width: 100%;
+}
+
+.cisco-header {
+    background: #0084c2;
+    color: white;
+    padding: 12px 15px;
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.cisco-question {
+    padding: 15px;
+    border-bottom: 1px solid #eaeaea;
+    word-break: break-word; /* Allow long words to break */
+    color: black;
+}
+
+.cisco-question:last-child {
+    border-bottom: none;
+}
+
+.question-text {
+    margin-bottom: 10px;
+    font-weight: 500;
+    word-wrap: break-word; /* Allow wrapping for long text */
+    overflow-wrap: break-word;
+}
+
+.question-number {
+    color: #0084c2;
+    font-weight: bold;
+    margin-right: 4px;
+    display: inline-block;
+}
+
+.cisco-dropzone {
+    background: #f8f9fa;
+    border: 2px dashed #c2d6e6;
+    border-radius: 4px;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.cisco-dropzone.dragover {
+    border-color: #0084c2;
+    background-color: rgba(0, 132, 194, 0.05);
+}
+
+.dropzone-placeholder {
+    color: #8c9cb2;
+    font-style: italic;
+    font-size: 13px;
+    text-align: center;
+    padding: 5px;
+}
+
+.cisco-answer {
+    margin: 10px;
+    padding: 12px 15px;
+    background: white;
+    border: 1px solid #e1e6eb;
+    border-radius: 4px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    word-break: break-word; /* Allow word breaking */
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+    color: black;
+}
+
+.cisco-answer:hover {
+    border-color: #0084c2;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.cisco-answer.dragging {
+    opacity: 0.7;
+    border-color: #0084c2;
+    cursor: grabbing;
+}
+
+.cisco-answer.matched {
+    margin: 0;
+    border-radius: 3px;
+    box-shadow: none;
+    width: 100%;
+}
+
+.cisco-answer.correct {
+    background-color: rgba(75, 181, 67, 0.1);
+    border-color: #4bb543;
+}
+
+.cisco-answer.incorrect {
+    background-color: rgba(239, 83, 80, 0.1);
+    border-color: #ef5350;
+}
+
+.cisco-dropzone.correct {
+    border: 2px solid #4bb543;
+    background-color: rgba(75, 181, 67, 0.05);
+}
+
+.cisco-dropzone.incorrect {
+    border: 2px solid #ef5350;
+    background-color: rgba(239, 83, 80, 0.05);
+}
+
+.cisco-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.cisco-submit-btn, .cisco-reset-btn {
+    padding: 10px 20px; /* Reduced horizontal padding */
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.cisco-submit-btn {
+    background-color: #0084c2;
+    color: white;
+}
+
+.cisco-submit-btn:hover {
+    background-color: #006fa3;
+}
+
+.cisco-reset-btn {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+.cisco-reset-btn:hover {
+    background-color: #dde1e4;
+}
+
+.cisco-submit-btn.disabled, .cisco-reset-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.cisco-result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 500;
+    animation: fadeIn 0.5s;
+    word-wrap: break-word;
+}
+
+.cisco-result.success {
+    background-color: rgba(75, 181, 67, 0.1);
+    color: #3e9432;
+    border: 1px solid rgba(75, 181, 67, 0.3);
+}
+
+.cisco-result.error {
+    background-color: rgba(239, 83, 80, 0.1);
+    color: #c62828;
+    border: 1px solid rgba(239, 83, 80, 0.3);
+}
+
+/* Touch dragging styles */
+.cisco-answer.touch-dragging {
+    opacity: 0.8;
+    z-index: 100;
+}
+
+/* Enhanced responsive design for smaller screens */
+@media (max-width: 768px) {
+    .cisco-matching-container {
+        padding: 15px 10px; /* Reduced padding on small screens */
+    }
+    
+    .cisco-matching-area {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .cisco-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cisco-submit-btn, .cisco-reset-btn {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .cisco-header {
+        font-size: 15px;
+        padding: 10px;
+    }
+    
+    .cisco-question {
+        padding: 12px 10px;
+    }
+    
+    .cisco-answer {
+        margin: 8px 5px;
+        padding: 10px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .cisco-matching-container {
+        padding: 10px 5px;
+    }
+    
+    .cisco-instructions {
+        padding: 10px;
+    }
+    
+    .cisco-dropzone {
+        min-height: 40px;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

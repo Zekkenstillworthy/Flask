@@ -1,0 +1,2573 @@
+{% extends 'user/base.html' %}
+
+{% block head %}
+<title>Network Troubleshooting | RiddleNet</title>
+<!-- Include Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/troubleshoot.css') }}">
+<link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+<style>
+    body {
+        background-color: #00C3B5;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    #app {
+        display: flex;
+        background-color: #00C3B5;
+        color: #fff;
+        height: 100vh;
+    }
+
+    h3 {
+        color: #fff;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    #problem-select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 12px;
+    }
+
+    input[type="text"],
+    select {
+        width: 100%;
+        padding: 6px;
+        margin: 8px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #fff;
+        color: #00C3B5;
+    }
+
+    #device-palette {
+        position: relative;
+        width: 160px;
+        padding: 10px;
+        background-color: #00C3B5;
+        border-right: 2px solid #fff;
+        color: #fff;
+        text-align: center;
+    }
+
+    .device {
+        padding: 8px;
+        background-color: #fff;
+        margin: 5px 0;
+        cursor: pointer;
+        text-align: center;
+        border: 1px solid #fff;
+        color: #fff;
+        border-radius: 4px;
+    }
+
+    .device img.device-icon {
+        width: 50px;
+        height: 50px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .device span {
+        display: block;
+        margin-top: 5px;
+        color: #00C3B5;
+        font-size: 14px;
+    }
+
+    .device:hover {
+        background-color: #fff;
+        color: #00C3B5;
+    }
+
+    .action-btn {
+        margin-top: 10px;
+        padding: 8px;
+        background-color: #00C3B5;
+        cursor: pointer;
+        border: none;
+        color: #fff;
+        text-align: center;
+        border-radius: 4px;
+        border: 1px solid #fff;
+    }
+
+    .action-btn:hover {
+        background-color: #fff;
+        color: #00C3B5;
+    }
+
+    .action-btn.selected {
+        background-color: #fff;
+        color: #00C3B5;
+    }
+
+    #connection-mode-btn.active {
+        background-color: #fff;
+        color: #00C3B5;
+    }
+
+    #canvas-container {
+        flex-grow: 1;
+        position: relative;
+        background-color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #Canvas {
+        background-color: #fff;
+        width: 98%;
+        height: 97%;
+        border: 5px solid #00C3B5;
+    }
+
+
+    .tutorialModal {
+        display: none;
+        position: absolute;
+        background-color: #00C3B5;
+        border: 2px solid #fff;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 400px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .configModal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        background-color: #000;
+        /* Changed to black for terminal look */
+        z-index: 2000;
+        color: #00C3B5;
+        /* Green text for terminal look */
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px solid #00C3B5;
+        /* Border color for terminal look */
+        box-shadow: 0 0 20px rgba(0, 195, 181, 0.4);
+    }
+
+    .easyDescModal,
+    .mediumDescModal,
+    .hardDescModal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        overflow: auto;
+        border-radius: 10px;
+        border: 2px solid #00C3B5;
+        box-shadow: 0 0 20px rgba(0, 195, 181, 0.4);
+    }
+
+    .scenarioModal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 400px;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 2000;
+        color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+        /* Add overflow-y to handle content overflow */
+    }
+
+    .tutorialmodal-content {
+        position: relative;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #00C3B5;
+        border: 2px solid #fff;
+        text-align: center;
+        max-height: 80vh;
+    }
+
+    .configmodal-content {
+        position: relative;
+        padding: 20px;
+        width: 100%;
+        border-radius: 10px;
+        background-color: #000;
+        /* Changed to black for terminal look */
+        border: 2px solid #00C3B5;
+        /* Border color for terminal look */
+        text-align: left;
+        /* Left align text for terminal look */
+        max-height: 80vh;
+    }
+
+    .configmodal-content h2 {
+        text-align: center;
+    }
+
+
+    .profile-exit-btn {
+        height: 25px;
+        width: 25px;
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        background-color: #f00;
+        border: none;
+        font-size: 24px;
+        color: #fff;
+        cursor: pointer;
+        padding: 8px;
+        line-height: 1;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        border-radius: 40%;
+        border: 2px solid #fff;
+    }
+
+    .profile-exit-btn:hover {
+        background-color: #f00;
+        transform: scale(1.1);
+        color: #fff;
+    }
+
+
+    .easydescmodal-content,
+    .mediumdescmodal-content,
+    .harddescmodal-content {
+        padding: 30px;
+        text-align: center;
+        color: #fff;
+        background-color: #00C3B5;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .easydescmodal-content h2,
+    .mediumdescmodal-content h2,
+    .harddescmodal-content h2 {
+        text-align: center;
+    }
+
+    .highlight {
+        border: 3px solid #FFD700;
+        box-shadow: 0 0 35px #FFD700;
+        z-index: 1001;
+        position: relative;
+    }
+
+    .tutorial-buttons {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .tutorial-buttons button {
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #00C3B5;
+        font-size: 16px;
+        border: 2px solid #fff;
+    }
+
+    .tutorial-buttons button:disabled {
+        background-color: #555;
+        cursor: not-allowed;
+    }
+
+    .tutorial-buttons button:hover:not(:disabled) {
+        background-color: #fff;
+        color: #00C3B5;
+    }
+
+    .modal-content p {
+        font-size: 18px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+
+
+    .scenario-desc {
+        width: 100%;
+        height: 600px;
+        overflow-y: auto;
+        padding: 20px;
+        margin: 0 auto;
+    }
+
+
+
+    .scenario-card:hover {
+        transform: scale(1.05);
+        background: #00C3B5;
+        color: #fff;
+    }
+
+    .scenario-card h2,
+    .scenario-card p,
+    .scenario-card small {
+        margin: 0;
+        text-align: center;
+    }
+
+    .scenario-grid {
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
+        padding: 20px;
+        width: 515px;
+
+    }
+
+    #scenarioModal .modal {
+        width: 600px;
+        /* increased from 500px */
+        height: 400px;
+        overflow-y: auto;
+    }
+
+    #scenarioModal .scenario-card {
+        background-color: #09001d;
+        border: 2px solid #00C3B5;
+        color: #fff;
+        padding: 20px;
+        margin: 10px 0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    #scenarioModal .scenario-card:hover {
+        background-color: #00C3B5;
+        border-color: #fff;
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+    #scenarioModal .scenario-card h2 {
+        font-size: 24px;
+        margin-bottom: 15px;
+        color: inherit;
+    }
+
+    #scenarioModal .scenario-card p {
+        font-size: 16px;
+        line-height: 1.4;
+        color: inherit;
+        margin: 0;
+    }
+
+    .scenario-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .scenario-item {
+        background-color: #09001d;
+        border: 2px solid #00C3B5;
+        padding: 20px;
+        border-radius: 10px 10px 0 0;
+        transition: all 0.3s ease;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 60px;
+        /* Increased from 50px */
+        position: relative;
+    }
+
+    .scenario-item h3,
+    .scenario-item p {
+        margin-bottom: 10px;
+    }
+
+    .select-btn {
+        position: relative;
+        /* Ensure the check mark is positioned correctly */
+        background-color: #00C3B5;
+        color: #fff;
+        border: none;
+        padding: 12px 24px;
+        margin-top: 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .select-btn.completed::after {
+        content: '✔';
+        color: #fff;
+        font-size: 20px;
+        margin-left: 10px;
+
+    }
+
+    .select-btn.completed:hover::after {
+        color: #00C3B5;
+        /* Change check mark color to white on hover */
+    }
+
+    .scenario-item h3 {
+        color: #00C3B5;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+
+    .scenario-item p {
+        margin: 10px 0;
+        line-height: 1.4;
+    }
+
+    .select-btn {
+        background-color: #00C3B5;
+        color: #fff;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .select-btn:hover {
+        background-color: #fff;
+    }
+
+    .terminal {
+        background-color: #000;
+        color: #00FF00;
+        font-family: 'Courier New', Courier, monospace;
+        padding: 10px;
+        border-radius: 5px;
+        height: 300px;
+        overflow-y: auto;
+    }
+
+    .terminal-output {
+        height: 80%;
+        overflow-y: auto;
+        margin-bottom: 10px;
+    }
+
+    .terminal-input {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #333;
+        color: #00FF00;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .cli {
+        background-color: #000;
+        /* Black background for terminal look */
+        color: #00C3B5;
+        /* Green text for terminal look */
+        font-family: 'Courier New', Courier, monospace;
+        border-radius: 5px;
+        height: 300px;
+        width: 100%;
+        /* Full width */
+        box-sizing: border-box;
+        /* Ensure padding is included in width */
+        padding: 10px;
+        /* Padding for terminal look */
+    }
+
+    .cli-output {
+        height: 80%;
+        overflow-y: auto;
+        word-wrap: break-word;
+        width: 100%;
+        /* Full width */
+        margin-bottom: 10px;
+        /* Margin for spacing */
+    }
+
+    .cli-input {
+        width: 100%;
+        /* Full width */
+        border: none;
+        border-radius: 5px;
+        background-color: #333;
+        /* Dark background for input */
+        color: #00FF00;
+        /* Green text for input */
+        font-family: 'Courier New', Courier, monospace;
+        overflow-x: auto;
+        padding: 10px;
+        /* Padding for input */
+    }
+
+    .modal-buttons {
+        display: flex;
+        justify-content: flex-end;
+        /* Align buttons to the right */
+        gap: 10px;
+        /* Space between buttons */
+    }
+
+    .scenario-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        width: 500px;
+        background-color: #00C3B5;
+        border: 2px solid #fff;
+        border-radius: 10px;
+        padding: 20px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 2001;
+        box-shadow: 0 0 20px rgba(0, 195, 181, 0.4);
+    }
+
+    .scenario-popup.active {
+        display: flex;
+        flex-direction: column;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .scenario-popup h2 {
+        font-size: 32px;
+        color: #fff;
+        text-align: center;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, transparent, #00C3B5, transparent);
+        border-radius: 6px;
+        padding: 10px;
+    }
+
+    .scenario-btn {
+        width: 100%;
+        height: 60px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 6px;
+        font-size: 18px;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .scenario-btn:hover {
+        background: #fff;
+        color: #00C3B5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+
+
+
+    .scenariomodal-content {
+        padding: 20px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        border-top: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+    }
+
+    .scenario-popup .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+        padding-top: 15px;
+    }
+
+    .scenario-popup .back-btn {
+        width: 100px;
+        height: 40px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 6px;
+        font-size: 16px;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .scenario-popup .back-btn:hover {
+        background: #fff;
+        color: #00C3B5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+    .easy-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        width: 500px;
+        background-color: #00C3B5;
+        border: 2px solid #fff;
+        border-radius: 10px;
+        padding: 20px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 2001;
+        box-shadow: 0 0 20px rgba(0, 195, 181, 0.4);
+    }
+
+    .easy-popup.active {
+        display: flex;
+        flex-direction: column;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .easy-popup h2 {
+        font-size: 32px;
+        color: #fff;
+        text-align: center;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, transparent, #00C3B5, transparent);
+        border-radius: 6px;
+        padding: 10px;
+    }
+
+    .easydescmodal-content {
+        padding: 20px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        border-top: 2px solid #fff;
+    }
+
+    .easy-popup .select-btn {
+        width: 100%;
+        height: 60px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 6px;
+        font-size: 18px;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+        position: static;
+    }
+
+    .easy-popup .select-btn:hover {
+        background: #fff;
+        color: #00C3B5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+    .easy-popup .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px solid #fff;
+    }
+
+    .easy-popup .action-btn {
+        width: 100px;
+        height: 40px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 6px;
+        font-size: 16px;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .easy-popup .action-btn:hover {
+        background: #fff;
+        color: #00C3B5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+    .medium-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        width: 500px;
+        background-color: #00C3B5;
+        border: 2px solid #fff;
+        border-radius: 10px;
+        padding: 20px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 2001;
+        box-shadow: 0 0 20px rgba(0, 195, 181, 0.4);
+    }
+
+    .medium-popup.active {
+        display: flex;
+        flex-direction: column;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .medium-popup h2 {
+        font-size: 32px;
+        color: #fff;
+        text-align: center;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, transparent, #00C3B5, transparent);
+        border-radius: 6px;
+        padding: 10px;
+    }
+
+    .mediumdescmodal-content {
+        padding: 20px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        border-top: 2px solid #fff;
+    }
+
+    .medium-popup .select-btn {
+        width: 100%;
+        height: 60px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 6px;
+        font-size: 18px;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+        position: static;
+    }
+
+    .medium-popup .select-btn:hover {
+        background: #fff;
+        color: #00C3B5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+    .medium-popup .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px solid #fff;
+    }
+
+    .medium-popup .action-btn {
+        width: 100px;
+        height: 40px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 6px;
+        font-size: 16px;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+
+    .medium-popup .action-btn:hover {
+        background: #fff;
+        color: #00C3B5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+    .hard-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        width: 500px;
+        background-color: #00C3B5;
+        border: 2px solid #fff;
+        border-radius: 10px;
+        padding: 20px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 2001;
+        box-shadow: 0 0 20px rgba(0, 195, 181, 0.4);
+    }
+
+    .hard-popup.active {
+        display: flex;
+        flex-direction: column;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .hard-popup h2 {
+        font-size: 32px;
+        color: #fff;
+        text-align: center;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, transparent, #00C3B5, transparent);
+        border-radius: 6px;
+        padding: 10px;
+    }
+
+    .harddescmodal-content {
+        padding: 20px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-top: 2px solid #fff;
+    }
+
+    .hard-popup .select-btn {
+        width: 100%;
+        height: 60px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 6px;
+        font-size: 18px;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+        position: static;
+    }
+
+    .hard-popup .select-btn:hover {
+        background: #fff;
+        color: #00C3B5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+    .hard-popup .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px solid #fff;
+    }
+
+    .hard-popup .action-btn {
+        width: 100px;
+        height: 40px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 6px;
+        font-size: 16px;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .hard-popup .action-btn:hover {
+        background: #fff;
+        color: #00C3B5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 195, 181, 0.4);
+    }
+
+    .problem-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        width: 500px;
+        background-color: #09001d;
+        border: 2px solid #00C3B5;
+        border-radius: 10px;
+        padding: 20px;
+        z-index: 2002;
+        box-shadow: 0 0 20px rgba(0, 195, 181, 0.4);
+    }
+
+    .problempopup-content {
+        padding: 20px;
+        color: #fff;
+        text-align: left;
+    }
+
+    .problempopup-content h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #00C3B5;
+    }
+
+    .progress-info {
+        margin: 20px 0;
+    }
+
+    .progress-info p {
+        margin: 10px 0;
+        line-height: 1.5;
+    }
+
+    .selected-device {
+        border: 3px solid #FFD700;
+        box-shadow: 0 0 35px #FFD700;
+        border-radius: 50%;
+    }
+</style>
+</head>
+
+<body>
+    <div id="app">
+
+
+        <!-- Tutorial Modal -->
+        <div id="tutorialModal" class="tutorialModal">
+            <div class="tutorialmodal-content">
+                <h2>Tutorial</h2>
+                <div id="tutorialStep"></div>
+                <div class="tutorial-buttons">
+                    <button id="prevStep" onclick="prevTutorialStep()" disabled><i
+                            class='bx bxs-left-arrow'></i></button>
+                    <button id="nextStep" onclick="nextTutorialStep()"><i class='bx bxs-right-arrow'></i></button>
+                    <i onclick="closeTutorial()" class="bx bx-x profile-exit-btn"></i>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Configuration Modal after the Tutorial Modal -->
+        <div id="configModal" class="configModal">
+            <div class="configmodal-content">
+                <h2>Device Configuration CLI - <span id="device-name"></span></h2>
+                <div id="cli" class="cli">
+                    <div id="cli-output" class="cli-output"></div>
+                    <input type="text" id="cli-input" class="cli-input" placeholder="Enter command...">
+                </div>
+                <i onclick="closeConfigModal()" class="bx bx-x profile-exit-btn"></i>
+
+            </div>
+        </div>
+
+        <!-- Add new scenario selection modal -->
+        <div id="scenarioModal" class="scenario-popup">
+            <h2>Select a Scenario</h2>
+            <div class="scenariomodal-content">
+
+                <button class="scenario-btn" onclick="selectScenario('easy')">
+                    Easy
+                </button>
+                <button class="scenario-btn" onclick="selectScenario('medium')">
+                    Medium
+                </button>
+                <button class="scenario-btn" onclick="selectScenario('hard')">
+                    Hard
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button class="back-btn" onclick="closeScenarioModal()"><i class='bx bxs-left-arrow'></i></button>
+            </div>
+        </div>
+
+        <!-- After the scenarioModal div, add the new description modals -->
+        <div id="easyDescModal" class="easy-popup">
+            <h2>Easy Scenarios</h2>
+            <div class="easydescmodal-content">
+                <button onclick="startScenario('easy', 'network')" class="select-btn">
+                    Misconfigured Network Address
+                </button>
+                <button onclick="startScenario('easy', 'passive')" class="select-btn">
+                    Passive Interface
+                </button>
+                <button onclick="startScenario('easy', 'version')" class="select-btn">
+                    Incorrect Version
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="backToScenarioSelection()" class="action-btn"><i
+                        class='bx bxs-left-arrow'></i></button>
+            </div>
+        </div>
+
+        <!-- Medium Scenarios Modal -->
+        <div id="mediumDescModal" class="medium-popup">
+            <h2>Medium Scenarios</h2>
+            <div class="mediumdescmodal-content">
+                <button onclick="startScenario('medium', 'split')" class="select-btn">
+                    Split Horizon
+                </button>
+                <button onclick="startScenario('medium', 'hopcount')" class="select-btn">
+                    Maximum Hop Count Reached
+                </button>
+                <button onclick="startScenario('medium', 'timers')" class="select-btn">
+                    Timers Mismatch
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="backToScenarioSelection()" class="action-btn"><i
+                        class='bx bxs-left-arrow'></i></button>
+            </div>
+        </div>
+
+        <!-- Hard Scenarios Modal -->
+        <div id="hardDescModal" class="hard-popup">
+            <h2>Hard Scenarios</h2>
+            <div class="harddescmodal-content">
+                <button onclick="startScenario('hard', 'flapping')" class="select-btn">
+                    Route Flapping
+                </button>
+                <button onclick="startScenario('hard', 'loops')" class="select-btn">
+                    Routing Loops
+                </button>
+                <button onclick="startScenario('hard', 'summarization')" class="select-btn">
+                    Incorrect Route Summarization
+                </button>
+                <button onclick="startScenario('hard', 'auth')" class="select-btn">
+                    Authentication Failure (RIP v2)
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="backToScenarioSelection()" class="action-btn"><i
+                        class='bx bxs-left-arrow'></i></button>
+            </div>
+        </div>
+
+        <!-- Add problem popup after other modals -->
+        <div id="problemPopup" class="problem-popup">
+            <div class="problempopup-content">
+                <h2>Problem Progress</h2>
+                <div class="progress-info">
+                    <p id="problemStatus"></p>
+                    <p id="remainingIssues"></p>
+                </div>
+                <div class="modal-buttons">
+                    <i onclick="closeProblemPopup()" class="bx bx-x profile-exit-btn"></i>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Device Palette -->
+        <div id="device-palette">
+            <h3>Troubleshooting </h3>
+            <div class="action-btn" id="select-scenario-btn" onclick="showScenarioSelection()">Select Scenario</div>
+            <div class="action-btn" id="troubleshoot-btn">Check Solution</div>
+            <h3>Devices</h3>
+            <div class="device" draggable="true" data-type="router">
+                <img src="{{ url_for('static', filename='img/Router.png') }}" alt="Router" class="device-icon">
+                <span>Router</span>
+            </div>
+            <div class="device" draggable="true" data-type="switch">
+                <img src="{{ url_for('static', filename='img/Switch.png') }}" alt="Switch" class="device-icon">
+                <span>Switch</span>
+            </div>
+            <div class="device" draggable="true" data-type="pc">
+                <img src="{{ url_for('static', filename='img/PC.png') }}" alt="End Device" class="device-icon">
+                <span>End Device</span>
+            </div>
+
+            <!-- Buttons Section -->
+            <div style="margin-top: 20px;">
+                <h3>Actions</h3>
+                <div id="connection-mode-btn" class="action-btn">Connection Mode</div>
+                <div id="delete-connection-btn" class="action-btn">Delete Connection</div>
+                <div id="delete-device-btn" class="action-btn">Delete Device</div>
+                <div id="gotoHome" class="action-btn" onclick="goToHome()"><i class='bx bxs-home'></i></div>
+
+            </div>
+        </div>
+
+
+        <!-- Main Canvas -->
+        <div id="canvas-container">
+            <canvas id="Canvas"></canvas>
+        </div>
+
+
+        <script>
+            function goToHome() {
+                window.location.href = "{{ url_for('user.dashboard') }}";
+            }
+
+            const palette = document.getElementById("device-palette");
+            const canvas = document.getElementById("Canvas");
+            const ctx = canvas.getContext("2d");
+            const troubleShoot = document.getElementById("troubleshoot-btn");
+
+            let selectedDevice = null;
+            let devices = [];
+            let connections = [];
+            let isConnectionMode = false;
+            let firstDevice = null;
+
+            let isDragging = false;
+            let draggedDevice = null;
+
+
+            // Adjust canvas size
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+
+
+            class Device {
+                constructor(type, x, y, label) {
+                    this.type = type;
+                    this.x = x;
+                    this.y = y;
+                    this.label = label;
+                    this.ipv4 = '';
+                    this.ipv6 = '';
+                    this.subnet = '';
+                    this.protocol = 'none';
+                    this.image = new Image();
+                    this.image.onload = () => {
+                        this.isImageLoaded = true;
+                        redrawCanvas();
+                    };
+                    switch (type) {
+                        case 'pc':
+                            this.image.src = "{{ url_for('static', filename='img/PC.png') }}";
+                            break;
+                        case 'router':
+                            this.image.src = "{{ url_for('static', filename='img/Router.png') }}";
+                            break;
+                        case 'switch':
+                            this.image.src = "{{ url_for('static', filename='img/Switch.png') }}";
+                            break;
+                    }
+                    this.speed = 'auto';
+                    this.duplex = 'auto';
+                    this.configured = false;
+                }
+
+                draw(ctx) {
+                    if (this.isImageLoaded) {
+                        ctx.drawImage(this.image, this.x - 30, this.y - 25, 60, 60); // Increased size
+                        // Draw device label below
+                        ctx.fillStyle = "#00C3B5";
+                        ctx.font = "14px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText(this.label, this.x, this.y + 50); // Adjusted label position
+                    }
+                }
+            }
+
+            class PC extends Device {
+                constructor(x, y, label) {
+                    super('pc', x, y, label);
+                }
+            }
+
+            class Router extends Device {
+                constructor(x, y, label) {
+                    super('router', x, y, label);
+                }
+            }
+
+            class Switch extends Device {
+                constructor(x, y, label) {
+                    super('switch', x, y, label);
+                }
+            }
+
+
+
+            // Add event listeners for draggable devices
+            const deviceElements = document.querySelectorAll(".device");
+            deviceElements.forEach(el => {
+                el.addEventListener("dragstart", handleDragStart);
+            });
+
+
+
+            function handleDragStart(e) {
+                e.dataTransfer.setData("type", e.target.getAttribute("data-type"));
+            }
+
+            // Handle drag over the canvas
+            canvas.addEventListener("dragover", (e) => e.preventDefault());
+
+            // Handle drop on canvas
+            canvas.addEventListener("drop", (e) => {
+                const type = e.dataTransfer.getData("type");
+                const x = e.offsetX;
+                const y = e.offsetY;
+
+                addDevice(type, x, y);
+                redrawCanvas();
+            });
+
+            // Add device to the canvas
+            let deviceCounter = {
+                pc: 0,
+                router: 0,
+                switch: 0
+            };
+
+            function addDevice(type, x, y) {
+                let newDevice;
+                deviceCounter[type]++;
+                const label = `${type.charAt(0).toUpperCase() + type.slice(1)} ${deviceCounter[type]}`;
+
+                switch (type) {
+                    case 'pc':
+                        newDevice = new PC(x, y, label);
+                        break;
+                    case 'router':
+                        newDevice = new Router(x, y, label);
+                        break;
+                    case 'switch':
+                        newDevice = new Switch(x, y, label);
+                        break;
+                    default:
+                        return; // If no valid type is passed, don't add a device
+                }
+
+                devices.push(newDevice);
+                selectedDevice = newDevice;
+                redrawCanvas();
+            }
+
+
+            // Toggle connection mode
+            document.getElementById("connection-mode-btn").addEventListener("click", () => {
+                isConnectionMode = !isConnectionMode;
+                document.getElementById("connection-mode-btn").classList.toggle("active", isConnectionMode);
+            });
+
+            // Handle canvas click for device selection and connection mode
+            canvas.addEventListener("click", (e) => {
+                const clickedDevice = findDeviceByPosition(e.offsetX, e.offsetY);
+                if (isConnectionMode) {
+                    if (clickedDevice) {
+                        if (!firstDevice) {
+                            firstDevice = clickedDevice;  // Select the first device
+                        } else {
+                            addConnection(firstDevice, clickedDevice);  // Connect first and second device
+                            firstDevice = null;  // Reset after connecting
+                        }
+                    }
+                } else if (clickedDevice) {
+                    selectedDevice = clickedDevice;
+                } else {
+                    selectedDevice = null;
+                }
+                redrawCanvas();
+            });
+
+            // Find device by position
+            function findDeviceByPosition(x, y) {
+                return devices.find(device => {
+                    const dx = x - device.x;
+                    const dy = y - device.y;
+                    return dx * dx + dy * dy <= 400;  // 20px radius for device selection
+                });
+            }
+
+            // Redraw canvas with devices and connections
+            function redrawCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                connections.forEach(connection => drawConnection(connection));
+                devices.forEach(device => drawDevice(device));
+            }
+
+            // Draw connection line between devices
+            function drawConnection(connection) {
+                ctx.beginPath();
+                ctx.moveTo(connection.device1.x, connection.device1.y);
+                ctx.lineTo(connection.device2.x, connection.device2.y);
+                ctx.strokeStyle = "#00C3B5";
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+
+            // Draw device on the canvas
+            function drawDevice(device) {
+                device.draw(ctx);
+                if (device === selectedDevice) {
+                    ctx.beginPath();
+                    ctx.arc(device.x, device.y, 30, 0, 2 * Math.PI); // Adjusted radius
+                    ctx.strokeStyle = "#FFD700";
+                    ctx.lineWidth = 9;
+                    ctx.stroke();
+                    ctx.shadowColor = "transparent"; // Ensure no glow effect
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            // Add connection between devices
+            function addConnection(device1, device2) {
+                const existingConnection = connections.find(conn =>
+                    (conn.device1 === device1 && conn.device2 === device2) ||
+                    (conn.device1 === device2 && conn.device2 === device1)
+                );
+
+                if (!existingConnection) {
+                    connections.push({ device1, device2 });
+                    redrawCanvas();
+                }
+                firstDevice = null;  // Reset after connection
+            }
+
+            // Find connection by position for deletion
+            function findConnectionByPosition(x, y) {
+                return connections.find(connection => {
+                    const { device1, device2 } = connection;
+                    const distanceToLine = pointToLineDistance(x, y, device1.x, device1.y, device2.x, device2.y);
+                    return distanceToLine < 10;  // Adjusted threshold for clicking accuracy (was 5)
+                });
+            }
+
+            // Helper function to calculate distance from a point to a line
+            function pointToLineDistance(px, py, x1, y1, x2, y2) {
+                const A = px - x1;
+                const B = py - y1;
+                const C = x2 - x1;
+                const D = y2 - y1;
+
+                const dot = A * C + B * D;
+                const lenSq = C * C + D * D;
+                const param = lenSq !== 0 ? dot / lenSq : -1;
+
+                let xx, yy;
+
+                if (param < 0) {
+                    xx = x1;
+                    yy = y1;
+                } else if (param > 1) {
+                    xx = x2;
+                    yy = y2;
+                } else {
+                    xx = x1 + param * C;
+                    yy = y1 + param * D;
+                }
+
+                const dx = px - xx;
+                const dy = py - yy;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            // Handle delete connection button
+            document.getElementById("delete-connection-btn").addEventListener("click", () => {
+                canvas.addEventListener("click", function deleteConnection(e) {
+                    const clickedConnection = findConnectionByPosition(e.offsetX, e.offsetY);
+                    if (clickedConnection) {
+                        // Remove the clicked connection from the connections array
+                        connections = connections.filter(conn => conn !== clickedConnection);
+                        redrawCanvas();  // Redraw canvas after deleting the connection
+                        alert("Connection deleted!");
+                    } else {
+                        alert("No connection clicked to delete.");
+                    }
+                    canvas.removeEventListener("click", deleteConnection);
+                });
+            });
+
+            // Handle dragging devices
+            canvas.addEventListener("mousedown", (e) => {
+                if (isConnectionMode) return; // Prevent dragging in connection mode
+                const clickedDevice = findDeviceByPosition(e.offsetX, e.offsetY);
+                if (clickedDevice) {
+                    isDragging = true;
+                    draggedDevice = clickedDevice;
+                }
+            });
+
+            canvas.addEventListener("mousemove", (e) => {
+                if (isDragging && draggedDevice) {
+                    draggedDevice.x = e.offsetX;
+                    draggedDevice.y = e.offsetY;
+                    redrawCanvas(); // Redraw the canvas to show the updated position
+                }
+            });
+
+            canvas.addEventListener("mouseup", () => {
+                isDragging = false;
+                draggedDevice = null;
+            });
+
+            // Handle delete device button
+            document.getElementById("delete-device-btn").addEventListener("click", () => {
+                if (selectedDevice) {
+                    // Remove the selected device from the devices array
+                    devices = devices.filter(device => device !== selectedDevice);
+
+                    // Also remove any associated connections
+                    connections = connections.filter(connection =>
+                        connection.device1 !== selectedDevice && connection.device2 !== selectedDevice
+                    );
+
+                    selectedDevice = null;  // Clear selection
+                    redrawCanvas();  // Redraw canvas after deletion
+                } else {
+                    alert("No device selected to delete.");
+                }
+            });
+
+            const tutorialSteps = [
+                {
+                    text: "Welcome to the Network Troubleshooting! Follow these steps to learn how to use it:",
+                    highlight: null
+                },
+                {
+                    text: "Step 1: Select a problem from the Select Scenario button.",
+                    highlight: "#select-scenario-btn"
+                },
+                {
+                    text: "Step 2: Drag and drop devices from the palette to the canvas.",
+                    highlight: ".device"
+                },
+                {
+                    text: "Step 3: Click 'Connection Mode' to start connecting devices.",
+                    highlight: "#connection-mode-btn"
+                },
+                {
+                    text: "Step 4: Click on two devices to create a connection between them.",
+                    highlight: "#Canvas"
+                },
+                {
+                    text: "Step 5: Click 'Check Scenario' to verify your network setup.",
+                    highlight: "#troubleshoot-btn"
+                },
+                {
+                    text: "Step 6: Use the 'Delete Connection' button to remove a connection.",
+                    highlight: "#delete-connection-btn"
+                },
+                {
+                    text: "Step 7: Use the 'Delete Device' button to remove a device.",
+                    highlight: "#delete-device-btn"
+                },
+                {
+                    text: "Step 8: Click 'Go to Home' to return to the dashboard.",
+                    highlight: "#gotoHome"
+                }
+            ];
+
+            let currentStep = 0;
+
+            function showTutorial() {
+                currentStep = 0;
+                document.getElementById("tutorialModal").style.display = "flex";
+                updateTutorialStep();
+            }
+
+            function updateTutorialStep() {
+                const step = tutorialSteps[currentStep];
+                document.getElementById("tutorialStep").innerHTML = `<p>${step.text}</p>`;
+
+                // Remove highlight from previous step
+                document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+
+                // Highlight the current step element
+                if (step.highlight) {
+                    const highlightElement = document.querySelector(step.highlight);
+                    highlightElement.classList.add('highlight');
+
+                    // Position the modal near the highlighted element
+                    const rect = highlightElement.getBoundingClientRect();
+                    const modal = document.getElementById("tutorialModal");
+                    const modalHeight = modal.offsetHeight;
+                    const modalWidth = modal.offsetWidth;
+                    const viewportHeight = window.innerHeight;
+                    const viewportWidth = window.innerWidth;
+
+                    // Center the modal if the canvas is highlighted
+                    if (step.highlight === "#Canvas") {
+                        modal.style.top = `50%`;
+                        modal.style.left = `50%`;
+                        modal.style.transform = `translate(-50%, -50%)`;
+                    } else {
+                        // Determine the best position for the modal
+                        let top = rect.top + window.scrollY + rect.height + 10; // Default position below the element
+                        let left = rect.left + window.scrollX + (rect.width / 2) - (modalWidth / 2);
+
+                        if (top + modalHeight > viewportHeight) {
+                            top = rect.top + window.scrollY - modalHeight - 10; // Position above the element if it overflows
+                        }
+                        if (left + modalWidth > viewportWidth) {
+                            left = viewportWidth - modalWidth - 10; // Adjust to the left if it overflows
+                        }
+                        if (left < 0) {
+                            left = 10; // Adjust to the right if it overflows
+                        }
+
+                        modal.style.top = `${top}px`;
+                        modal.style.left = `${left}px`;
+                        modal.style.transform = `none`;
+                    }
+                } else {
+
+                    const modal = document.getElementById("tutorialModal");
+                    modal.style.top = `50%`;
+                    modal.style.left = `50%`;
+                    modal.style.transform = `translate(-50%, -50%)`;
+                }
+
+                // Enable/disable buttons
+                document.getElementById("prevStep").disabled = currentStep === 0;
+                document.getElementById("nextStep").disabled = currentStep === tutorialSteps.length - 1;
+            }
+
+            function nextTutorialStep() {
+                if (currentStep < tutorialSteps.length - 1) {
+                    currentStep++;
+                    updateTutorialStep();
+                }
+            }
+
+            function prevTutorialStep() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateTutorialStep();
+                }
+            }
+
+            function closeTutorial() {
+                document.getElementById("tutorialModal").style.display = "none";
+                document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+
+                // Show and activate scenario popup
+                const scenarioModal = document.getElementById("scenarioModal");
+                scenarioModal.style.display = "flex";
+                scenarioModal.classList.add('active');
+            }
+
+            window.onload = function () {
+                showTutorial();
+            };
+
+            function savetroubleshootScore(score, category) {
+                fetch('/save_troubleshoot_score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ score: score, category: category })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('Score saved successfully');
+                        } else {
+                            alert('Error saving score:', data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            // Add new functions for scenario management
+
+            // Add configuration modal functions
+            function showConfigModal(device) {
+                const modal = document.getElementById("configModal");
+                const cliOutput = document.getElementById("cli-output");
+                const cliInput = document.getElementById("cli-input");
+                const deviceName = document.getElementById("device-name");
+
+                cliOutput.innerHTML = ''; // Clear previous CLI output
+                cliInput.value = ''; // Clear input field
+                deviceName.textContent = device.label; // Set device name
+
+                cliInput.onkeydown = function (event) {
+                    if (event.key === 'Enter') {
+                        const command = cliInput.value;
+                        handleCliCommand(command, device);
+                        cliInput.value = ''; // Clear input field after command
+                    }
+                };
+
+                modal.style.display = "flex";
+                selectedDevice = device;
+            }
+
+
+            function closeConfigModal() {
+                document.getElementById("configModal").style.display = "none";
+            }
+
+            // Update the canvas click handler to show config modal on double click
+            canvas.addEventListener("dblclick", (e) => {
+                const device = findDeviceByPosition(e.offsetX, e.offsetY);
+                if (device) {
+                    showConfigModal(device);
+                }
+            });
+
+            function validateInterfaceConfigurations() {
+                const connectedDevices = connections.map(conn => ({
+                    device1: conn.device1,
+                    device2: conn.device2
+                }));
+
+                let issues = [];
+
+                connectedDevices.forEach(({ device1, device2 }) => {
+                    // Check IP/Subnet compatibility
+                    if (!areInSameSubnet(device1, device2)) {
+                        issues.push(`${device1.label} and ${device2.label} are in different subnets`);
+                    }
+
+                    // Check speed/duplex mismatches
+                    if (device1.speed !== device2.speed && (device1.speed !== 'auto' && device2.speed !== 'auto')) {
+                        issues.push(`Speed mismatch between ${device1.label} and ${device2.label}`);
+                    }
+
+                    if (device1.duplex !== device2.duplex && (device1.duplex !== 'auto' && device2.duplex !== 'auto')) {
+                        issues.push(`Duplex mismatch between ${device1.label} and ${device2.label}`);
+                    }
+                });
+
+                const output = document.getElementById("terminal-output");
+                output.innerHTML += issues.length ?
+                    `<div class="error">Found ${issues.length} issues:<br>${issues.join('<br>')}</div>` :
+                    `<div class="success">All interface configurations are correct!</div>`;
+            }
+
+            function areInSameSubnet(device1, device2) {
+                if (!device1.ipv4 || !device2.ipv4 || !device1.subnet || !device2.subnet) return false;
+
+                const ip1 = ipToNumber(device1.ipv4);
+                const ip2 = ipToNumber(device2.ipv4);
+                const subnet = ipToNumber(device1.subnet);
+
+                return (ip1 & subnet) === (ip2 & subnet);
+            }
+
+            function ipToNumber(ip) {
+                return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet), 0) >>> 0;
+            }
+
+            function showScenarioSelection() {
+                const scenarioModal = document.getElementById("scenarioModal");
+                scenarioModal.style.display = "flex";
+                scenarioModal.classList.add('active');
+            }
+
+            function selectScenario(scenarioType) {
+                // Hide scenario modal with fade out
+                const scenarioModal = document.getElementById("scenarioModal");
+                scenarioModal.classList.remove('active');
+                scenarioModal.style.display = "none";
+
+                // Show and activate the selected description modal
+                const descModal = document.getElementById(`${scenarioType}DescModal`);
+                descModal.style.display = "flex";
+                descModal.classList.add('active');
+
+                const topologySound = document.getElementById('bgSound');
+                topologySound.currentTime = 0;
+                topologySound.play();
+                topologySound.loop = true;
+                // Update the "Select Scenario" button text and style
+                const selectScenarioBtn = document.getElementById("select-scenario-btn");
+                selectScenarioBtn.textContent = `Selected Scenario: ${scenarioType.charAt(0).toUpperCase() + scenarioType.slice(1)}`;
+                selectScenarioBtn.classList.add('selected');
+
+                // Reapply the completed class to buttons if necessary
+                document.querySelectorAll('.select-btn').forEach(button => {
+                    if (button.classList.contains('completed')) {
+                        button.classList.add('completed');
+                    }
+                });
+            }
+
+            function closeDescriptionModal(modalId) {
+                document.getElementById(modalId).style.display = "none";
+            }
+
+            function startScenario(difficulty, problemType) {
+                // Close the corresponding description modal
+                closeDescriptionModal(difficulty + 'DescModal');
+                // Clear existing devices and connections
+                devices = [];
+                connections = [];
+                // Redraw the canvas
+                redrawCanvas();
+                // Call the appropriate setup function
+                switch (difficulty) {
+                    case 'easy':
+                        setupEasyScenario(problemType);
+                        break;
+                    case 'medium':
+                        setupMediumScenario(problemType);
+                        break;
+                    case 'hard':
+                        setupHardScenario(problemType);
+                        break;
+                    default:
+                        alert('Unknown difficulty level');
+                }
+
+                // Store the current scenario for solution checking
+                currentScenario = { difficulty, problemType };
+            }
+
+            function setupEasyScenario(problemType) {
+                switch (problemType) {
+                    case 'network':
+                        // Setup for Misconfigured Network Address problem
+                        // Create PCs
+                        let pc1 = new PC(200, 200, 'PC 1');
+                        pc1.ipv4 = '192.168.1.10';
+                        pc1.subnet = '255.255.255.0';
+
+                        let pc2 = new PC(400, 200, 'PC 2');
+                        pc2.ipv4 = '192.168.2.20'; // Incorrect network
+                        pc2.subnet = '255.255.255.0';
+
+                        // Create a switch
+                        let switch1 = new Switch(300, 300, 'Switch 1');
+
+                        // Add devices to the array
+                        devices.push(pc1, pc2, switch1);
+
+                        // Create connections
+                        connections.push({ device1: pc1, device2: switch1 });
+                        connections.push({ device1: pc2, device2: switch1 });
+
+                        // Redraw the canvas to display the scenario
+                        redrawCanvas();
+                        break;
+                    case 'passive':
+                        // Setup for Passive Interface problem
+                        // Create routers
+                        let router1 = new Router(200, 200, 'Router 1');
+                        let router2 = new Router(400, 200, 'Router 2');
+
+                        // Configure IP addresses
+                        router1.ipv4 = '10.0.0.1';
+                        router1.subnet = '255.0.0.0';
+
+                        router2.ipv4 = '10.0.0.2';
+                        router2.subnet = '255.0.0.0';
+
+                        // Set one interface as passive
+                        router1.isPassive = true;
+
+                        // Add devices
+                        devices.push(router1, router2);
+
+                        // Connect routers
+                        connections.push({ device1: router1, device2: router2 });
+
+                        redrawCanvas();
+                        break;
+                    case 'version':
+                        // Setup for Incorrect Version problem
+                        // Create routers with different RIP versions
+                        let routerA = new Router(200, 200, 'Router A');
+                        routerA.ipv4 = '192.168.1.1';
+                        routerA.subnet = '255.255.255.0';
+                        routerA.ripVersion = 1;
+
+                        let routerB = new Router(400, 200, 'Router B');
+                        routerB.ipv4 = '192.168.1.2';
+                        routerB.subnet = '255.255.255.0';
+                        routerB.ripVersion = 2;
+
+                        devices.push(routerA, routerB);
+                        connections.push({ device1: routerA, device2: routerB });
+
+                        redrawCanvas();
+                        break;
+                }
+            }
+
+            function setupMediumScenario(problemType) {
+                // Clear existing devices and connections
+                devices = [];
+                connections = [];
+
+                switch (problemType) {
+                    case 'split':
+                        // Setup for Split Horizon problem
+                        // Create routers
+                        const routerA = new Router(200, 200, 'Router A');
+                        const routerB = new Router(400, 200, 'Router B');
+                        const routerC = new Router(300, 400, 'Router C');
+                        devices.push(routerA, routerB, routerC);
+
+                        // Create connections
+                        connections.push({ device1: routerA, device2: routerB });
+                        connections.push({ device1: routerB, device2: routerC });
+                        connections.push({ device1: routerC, device2: routerA });
+
+                        // Redraw canvas
+                        redrawCanvas();
+                        break;
+                    case 'hopcount':
+                        // Setup for Maximum Hop Count Reached problem
+                        // Create multiple routers to exceed hop count
+                        const routers = [];
+                        for (let i = 0; i < 17; i++) {
+                            const router = new Router(100 + i * 50, 200, `Router ${i + 1}`);
+                            devices.push(router);
+                            routers.push(router);
+                        }
+
+                        // Connect routers in a line
+                        for (let i = 0; i < routers.length - 1; i++) {
+                            connections.push({ device1: routers[i], device2: routers[i + 1] });
+                        }
+
+                        // Redraw canvas
+                        redrawCanvas();
+                        break;
+                    case 'timers':
+                        // Setup for Timers Mismatch problem
+                        // Create two routers with mismatched timers
+                        const router1 = new Router(250, 250, 'Router 1');
+                        const router2 = new Router(550, 250, 'Router 2');
+                        devices.push(router1, router2);
+
+                        // Create connection
+                        connections.push({ device1: router1, device2: router2 });
+
+                        // Assign mismatched timers (simulated via device properties)
+                        router1.timer = 30;
+                        router2.timer = 15;
+
+                        // Redraw canvas
+                        redrawCanvas();
+                        break;
+                }
+            }
+
+            function setupHardScenario(problemType) {
+                switch (problemType) {
+                    case 'flapping':
+                        // Setup for Route Flapping problem
+                        // Create network with unstable connection
+                        let router1 = new Router(200, 100, 'Router 1');
+                        let router2 = new Router(400, 100, 'Router 2');
+
+                        router1.ipv4 = '192.168.20.1';
+                        router2.ipv4 = '192.168.20.2';
+                        router1.subnet = router2.subnet = '255.255.255.0';
+
+                        devices.push(router1, router2);
+
+                        // Create unstable connection
+                        connections.push({ device1: router1, device2: router2, unstable: true });
+
+                        redrawCanvas();
+                        break;
+                    case 'loops':
+                        // Setup for Routing Loops problem
+                        let routerA = new Router(200, 100, 'Router A');
+                        let routerB = new Router(400, 100, 'Router B');
+                        let routerC = new Router(300, 250, 'Router C');
+
+                        routerA.ipv4 = '192.168.30.1';
+                        routerB.ipv4 = '192.168.30.2';
+                        routerC.ipv4 = '192.168.30.3';
+                        routerA.subnet = routerB.subnet = routerC.subnet = '255.255.255.0';
+
+                        devices.push(routerA, routerB, routerC);
+
+                        // Connect routers in a way that can cause loops
+                        connections.push({ device1: routerA, device2: routerB });
+                        connections.push({ device1: routerB, device2: routerC });
+                        connections.push({ device1: routerC, device2: routerA });
+
+                        redrawCanvas();
+                        break;
+                    case 'summarization':
+                        // Setup for Incorrect Route Summarization problem
+                        // Create devices with improper route summarization
+                        let mainRouter = new Router(300, 100, 'Main Router');
+                        mainRouter.ipv4 = '10.0.0.1';
+                        mainRouter.subnet = '255.0.0.0';
+
+                        let subnetRouter1 = new Router(200, 250, 'Subnet Router 1');
+                        subnetRouter1.ipv4 = '10.1.0.1';
+                        subnetRouter1.subnet = '255.255.0.0';
+
+                        let subnetRouter2 = new Router(400, 250, 'Subnet Router 2');
+                        subnetRouter2.ipv4 = '10.2.0.1';
+                        subnetRouter2.subnet = '255.255.0.0';
+
+                        devices.push(mainRouter, subnetRouter1, subnetRouter2);
+
+                        // Connect routers
+                        connections.push({ device1: mainRouter, device2: subnetRouter1 });
+                        connections.push({ device1: mainRouter, device2: subnetRouter2 });
+
+                        // Improper summarization configuration
+                        mainRouter.routeSummarization = false;
+
+                        redrawCanvas();
+                        break;
+                    case 'auth':
+                        // Setup for Authentication Failure (RIP v2) problem
+                        // Create routers with mismatched authentication settings
+                        let routerX = new Router(200, 150, 'Router X');
+                        routerX.ipv4 = '172.16.0.1';
+                        routerX.subnet = '255.255.0.0';
+                        routerX.ripAuth = 'password123';
+
+                        let routerY = new Router(400, 150, 'Router Y');
+                        routerY.ipv4 = '172.16.0.2';
+                        routerY.subnet = '255.255.0.0';
+                        routerY.ripAuth = 'wrongpass';
+
+                        devices.push(routerX, routerY);
+                        connections.push({ device1: routerX, device2: routerY });
+
+                        redrawCanvas();
+                        break;
+                }
+            }
+
+            function goBackToScenarios() {
+                // Hide specific modals
+                document.getElementById('easyDescModal').style.display = "none";
+                document.getElementById('mediumDescModal').style.display = "none";
+                document.getElementById('hardDescModal').style.display = "none";
+                // Show the main scenario selection modal
+                document.getElementById("scenarioModal").style.display = "flex";
+            }
+
+            function closeScenarioModal() {
+                const scenarioModal = document.getElementById("scenarioModal");
+                scenarioModal.classList.remove('active');
+                scenarioModal.style.display = "none";
+                showTutorial(); // This will show the tutorial again
+            }
+
+            function backToScenarioSelection() {
+                // Hide all difficulty modals
+                document.getElementById('easyDescModal').style.display = "none";
+                document.getElementById('mediumDescModal').style.display = "none";
+                document.getElementById('hardDescModal').style.display = "none";
+
+                // Show and activate the scenario selection modal
+                const scenarioModal = document.getElementById("scenarioModal");
+                scenarioModal.style.display = "flex";
+                scenarioModal.classList.add('active');
+            }
+
+            // Add event listener for the "Check Solution" button
+            troubleShoot.onclick = () => {
+                checkSolution(currentScenario);
+            };
+
+            let currentScenario = null;
+
+            function checkSolution(scenario) {
+                let result = false;
+                let issues = [];
+
+                switch (scenario.difficulty) {
+                    case 'easy':
+                        result = checkEasySolution(scenario.problemType);
+                        issues = getScenarioIssues(scenario);
+                        break;
+                    case 'medium':
+                        result = checkMediumSolution(scenario.problemType);
+                        issues = getScenarioIssues(scenario);
+                        break;
+                    case 'hard':
+                        result = checkHardSolution(scenario.problemType);
+                        issues = getScenarioIssues(scenario);
+                        break;
+                }
+
+                showProblemPopup(result, issues);
+
+                if (result) {
+                    updateScore(1);
+                    savetroubleshootScore(totalScore, 'troubleshoot');
+                    markScenarioAsCompleted(scenario.difficulty, scenario.problemType);
+                    markDifficultyAsCompleted(scenario.difficulty);
+                }
+            }
+
+            function markDifficultyAsCompleted(difficulty) {
+                const scenarioButton = document.querySelector(`.scenario-btn[onclick="selectScenario('${difficulty}')"]`);
+                if (scenarioButton) {
+                    scenarioButton.classList.add('completed');
+                }
+            }
+
+            let totalScore = 0;
+
+            function updateScore(increment) {
+                totalScore += increment;
+                console.log(`Total Score: ${totalScore}`);
+            }
+
+            function showProblemPopup(solved, issues) {
+                const popup = document.getElementById('problemPopup');
+                const status = document.getElementById('problemStatus');
+                const remaining = document.getElementById('remainingIssues');
+
+                status.textContent = solved ?
+                    'Congratulations! You have successfully solved the problem.' :
+                    'The solution is not correct yet. Please address the following issues:';
+
+                if (!solved && issues.length > 0) {
+                    remaining.innerHTML = issues.map(issue => `• ${issue}`).join('<br>');
+                } else {
+                    remaining.innerHTML = '';
+                }
+
+                popup.style.display = 'flex';
+
+                // Update the score display
+
+            }
+
+            function getScenarioIssues(scenario) {
+                const issues = [];
+                switch (scenario.problemType) {
+                    case 'network':
+                        if (!areDevicesConnected()) issues.push('Devices are not properly connected. Ensure all devices are connected to the switch.');
+                        if (!areIPsConfigured()) issues.push('IP addresses are not properly configured. Check the IP addresses and subnets.');
+                        break;
+                    case 'passive':
+                        if (isInterfaceStillPassive()) issues.push('Passive interface needs to be disabled. Use the CLI to disable the passive interface.');
+                        break;
+                    case 'version':
+                        if (!areVersionsMatching()) issues.push('RIP versions do not match. Ensure both routers are using the same RIP version.');
+                        break;
+                    case 'timers':
+                        if (checkTimersMismatch()) issues.push('Timers mismatch detected. Ensure both routers have matching timers.');
+                        break;
+                    case 'flapping':
+                        if (checkRouteFlapping()) issues.push('Route flapping detected. Stabilize the connection using the CLI.');
+                        break;
+                    case 'loops':
+                        if (checkRoutingLoops()) issues.push('Routing loops detected. Enable split-horizon to prevent loops.');
+                        break;
+                    case 'summarization':
+                        if (checkRouteSummarization()) issues.push('Route summarization not configured properly. Enable route summarization on the main router.');
+                        break;
+                    case 'auth':
+                        if (checkAuthenticationFailure()) issues.push('Authentication failure detected. Ensure both routers have matching authentication settings.');
+                        break;
+                }
+                return issues;
+            }
+
+            // Helper functions for issue checking
+            function areDevicesConnected() {
+                return connections.length > 0;
+            }
+
+            function areIPsConfigured() {
+                return devices.every(device => device.ipv4 && device.subnet);
+            }
+
+            function isInterfaceStillPassive() {
+                const router1 = devices.find(d => d.label === 'Router 1');
+                return router1 && router1.isPassive;
+            }
+
+            function areVersionsMatching() {
+                const routerA = devices.find(d => d.label === 'Router A');
+                const routerB = devices.find(d => d.label === 'Router B');
+                return routerA && routerB && routerA.ripVersion === routerB.ripVersion;
+            }
+
+            function checkEasySolution(problemType) {
+                switch (problemType) {
+                    case 'network':
+                        return checkMisconfiguredNetworkAddress();
+                    case 'passive':
+                        return checkPassiveInterface();
+                    case 'version':
+                        return checkIncorrectVersion();
+                    default:
+                        return false;
+                }
+            }
+
+            function checkMediumSolution(problemType) {
+                switch (problemType) {
+                    case 'split':
+                        return checkSplitHorizon();
+                    case 'hopcount':
+                        return checkHopCountExceeded();
+                    case 'timers':
+                        return checkTimersMismatch();
+                    default:
+                        return false;
+                }
+            }
+
+            function checkHardSolution(problemType) {
+                switch (problemType) {
+                    case 'flapping':
+                        return checkRouteFlapping();
+                    case 'loops':
+                        return checkRoutingLoops();
+                    case 'summarization':
+                        return checkRouteSummarization();
+                    case 'auth':
+                        return checkAuthenticationFailure();
+                    default:
+                        return false;
+                }
+            }
+
+            function handleCliCommandForMisconfiguredNetwork(command, device) {
+    const cliOutput = document.getElementById("cli-output");
+    const outputLine = document.createElement('div');
+
+    if (command.startsWith('ip address')) {
+        const parts = command.split(' ');
+        if (parts.length === 4) {
+            const ip = parts[2];
+            const subnet = parts[3];
+            device.ipv4 = ip; // Ensure the property name matches the device class
+            device.subnet = subnet; // Ensure the property name matches the device class
+            outputLine.textContent = `IP address set to ${ip} with subnet ${subnet}`;
+            console.log(`Device ${device.label} IP: ${device.ipv4}, Subnet: ${device.subnet}`); // Add console log
+        } else {
+            outputLine.textContent = `Invalid command format. Use: ip address <address> <subnet>`;
+        }
+    } else if (command === 'help') {
+        outputLine.textContent = 'Available commands: ip address <address> <subnet>, help';
+    } else {
+        outputLine.textContent = `Unknown command: ${command}`;
+    }
+    cliOutput.appendChild(outputLine);
+    redrawCanvas(); // Redraw the canvas to reflect the changes
+}
+
+            function handleCliCommandForPassiveInterface(command, device) {
+                const cliOutput = document.getElementById("cli-output");
+                const outputLine = document.createElement('div');
+
+                if (command === 'no passive-interface') {
+                    device.isPassive = false;
+                    outputLine.textContent = 'Passive interface disabled.';
+                } else if (command === 'help') {
+                    outputLine.textContent = 'Available commands: no passive-interface, show interfaces, help';
+                } else if (command === 'help') {
+                    outputLine.textContent = 'Available commands: no passive-interface, show interfaces, help';
+                } else {
+                    outputLine.textContent = `Unknown command: ${command}`;
+                }
+                cliOutput.appendChild(outputLine);
+            }
+
+            function handleCliCommandForIncorrectVersion(command, device) {
+                const cliOutput = document.getElementById("cli-output");
+                const outputLine = document.createElement('div');
+
+                if (command.startsWith('router rip version')) {
+                    const version = command.split(' ')[3];
+                    if (version === '1' || version === '2') {
+                        device.ripVersion = parseInt(version);
+                        outputLine.textContent = `RIP version set to ${version}.`;
+                    } else {
+                        outputLine.textContent = 'Invalid RIP version.';
+                    }
+                } else {
+                    outputLine.textContent = 'Invalid command format. Use: router rip version <1|2>';
+                }
+
+                cliOutput.appendChild(outputLine);
+            }
+
+            function handleCliCommandForSplitHorizon(command, device) {
+                const cliOutput = document.getElementById("cli-output");
+                const outputLine = document.createElement('div');
+
+                if (command === 'no ip split-horizon') {
+                    device.splitHorizonEnabled = false;
+                    outputLine.textContent = 'Split horizon disabled.';
+                } else if (command === 'help') {
+                    outputLine.textContent = 'Available commands: no ip split-horizon, show ip protocols, help';
+                } else {
+                    outputLine.textContent = `Unknown command: ${command}`;
+                }
+                cliOutput.appendChild(outputLine);
+            }
+
+            function handleCliCommandForTimersMismatch(command, device) {
+        const cliOutput = document.getElementById("cli-output");
+        const outputLine = document.createElement('div');
+
+        if (command.startsWith('timers basic')) {
+            const parts = command.split(' ');
+            if (parts.length === 6) {
+                const update = parseInt(parts[2]);
+                const invalid = parseInt(parts[3]);
+                const holddown = parseInt(parts[4]);
+                const flush = parseInt(parts[5]);
+
+                if (!isNaN(update) && !isNaN(invalid) && !isNaN(holddown) && !isNaN(flush)) {
+                    device.timers = { update, invalid, holddown, flush };
+                    outputLine.textContent = `Timers set to update: ${update}, invalid: ${invalid}, holddown: ${holddown}, flush: ${flush}.`;
+                } else {
+                    outputLine.textContent = 'Invalid timer values.';
+                }
+            } else {
+                outputLine.textContent = 'Invalid command format. Use: timers basic <update> <invalid> <holddown> <flush>';
+            }
+        } else if (command === 'help') {
+            outputLine.textContent = 'Available commands: timers basic <update> <invalid> <holddown> <flush>, show timers, help';
+        } else {
+            outputLine.textContent = `Unknown command: ${command}`;
+        }
+        cliOutput.appendChild(outputLine);
+    }
+
+            function handleCliCommandForAuthenticationFailure(command, device) {
+                const cliOutput = document.getElementById("cli-output");
+                const outputLine = document.createElement('div');
+
+                if (command.startsWith('set authentication')) {
+                    const password = command.split(' ')[2];
+                    device.ripAuth = password;
+                    outputLine.textContent = 'Authentication password set.';
+                } else if (command === 'help') {
+                    outputLine.textContent = 'Available commands: set authentication <password>, show authentication, help';
+                } else {
+                    outputLine.textContent = `Unknown command: ${command}`;
+                }
+                cliOutput.appendChild(outputLine);
+            }
+
+            function handleCliCommandForRouteFlapping(command, device) {
+                const cliOutput = document.getElementById("cli-output");
+                const outputLine = document.createElement('div');
+
+                if (command === 'stabilize') {
+                    const connection = connections.find(c => c.device1 === device || c.device2 === device);
+                    if (connection) {
+                        connection.unstable = false;
+                        connection.stabilized = true;
+                        outputLine.textContent = 'Connection stabilized.';
+                    } else {
+                        outputLine.textContent = 'No unstable connection found.';
+                    }
+                } else if (command === 'help') {
+                    outputLine.textContent = 'Available commands: stabilize, show status, help';
+                } else {
+                    outputLine.textContent = `Unknown command: ${command}`;
+                }
+                cliOutput.appendChild(outputLine);
+            }
+
+            function handleCliCommandForRoutingLoops(command, device) {
+                const cliOutput = document.getElementById("cli-output");
+                const outputLine = document.createElement('div');
+
+                if (command === 'enable split-horizon') {
+                    device.splitHorizonEnabled = true;
+                    outputLine.textContent = 'Split horizon enabled.';
+                } else if (command === 'help') {
+                    outputLine.textContent = 'Available commands: enable split-horizon, show status, help';
+                } else {
+                    outputLine.textContent = `Unknown command: ${command}`;
+                }
+                cliOutput.appendChild(outputLine);
+            }
+
+            function handleCliCommandForRouteSummarization(command, device) {
+                const cliOutput = document.getElementById("cli-output");
+                const outputLine = document.createElement('div');
+
+                if (command === 'enable summarization') {
+                    device.routeSummarization = true;
+                    outputLine.textContent = 'Route summarization enabled.';
+                } else if (command === 'help') {
+                    outputLine.textContent = 'Available commands: enable summarization, show status, help';
+                } else {
+                    outputLine.textContent = `Unknown command: ${command}`;
+                }
+                cliOutput.appendChild(outputLine);
+            }
+
+            function handleCliCommand(command, device) {
+                switch (currentScenario.problemType) {
+                    case 'network':
+                        handleCliCommandForMisconfiguredNetwork(command, device);
+                        break;
+                    case 'passive':
+                        handleCliCommandForPassiveInterface(command, device);
+                        break;
+                    case 'version':
+                        handleCliCommandForIncorrectVersion(command, device);
+                        break;
+                    case 'split':
+                        handleCliCommandForSplitHorizon(command, device);
+                        break;
+                    case 'timers':
+                        handleCliCommandForTimersMismatch(command, device);
+                        break;
+                    case 'auth':
+                        handleCliCommandForAuthenticationFailure(command, device);
+                        break;
+                    case 'flapping':
+                        handleCliCommandForRouteFlapping(command, device);
+                        break;
+                    case 'loops':
+                        handleCliCommandForRoutingLoops(command, device);
+                        break;
+                    case 'summarization':
+                        handleCliCommandForRouteSummarization(command, device);
+                        break;
+                    default:
+                        const cliOutput = document.getElementById("cli-output");
+                        const outputLine = document.createElement('div');
+                        outputLine.textContent = `Unknown command: ${command}`;
+                        cliOutput.appendChild(outputLine);
+                        break;
+                }
+            }
+
+            function checkMisconfiguredNetworkAddress() {
+                const pc1 = devices.find(d => d.label === 'PC 1');
+                const pc2 = devices.find(d => d.label === 'PC 2');
+
+                // Check if both devices exist
+                if (!pc1 || !pc2) {
+                    console.error("Error: One or both devices (PC 1, PC 2) are missing.");
+                    return false;
+                }
+
+                // Validate IP configuration for both devices
+                if (!isValidIPAddress(pc1.ipv4) || !isValidIPAddress(pc2.ipv4)) {
+                    console.error("Error: One or both devices have invalid IP addresses.");
+                    return false;
+                }
+
+                if (!isValidSubnetMask(pc1.subnet) || !isValidSubnetMask(pc2.subnet)) {
+                    console.error("Error: One or both devices have invalid subnet masks.");
+                    return false;
+                }
+
+                // Check for duplicate IP addresses
+                const ipAddresses = devices.map(d => d.ipv4);
+                if (new Set(ipAddresses).size !== ipAddresses.length) {
+                    console.error("Error: Duplicate IP addresses detected in the network.");
+                    return false;
+                }
+
+                // Check if the devices are in the same subnet
+                const inSameSubnet = areInSameSubnet(pc1, pc2);
+                if (!inSameSubnet) {
+                    console.error("Error: PC 1 and PC 2 are not in the same subnet.");
+                    return false;
+                }
+
+                console.log("Network configuration between PC 1 and PC 2 is valid.");
+                return true;
+            }
+
+            // Helper function to validate IP address format
+            function isValidIPAddress(ip) {
+                const ipRegex = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
+                return ipRegex.test(ip);
+            }
+
+            // Helper function to validate subnet mask format
+            function isValidSubnetMask(subnet) {
+                const validSubnets = [
+                    "255.255.255.255", "255.255.255.254", "255.255.255.252",
+                    "255.255.255.248", "255.255.255.240", "255.255.255.224",
+                    "255.255.255.192", "255.255.255.128", "255.255.255.0",
+                    "255.255.254.0", "255.255.252.0", "255.255.248.0",
+                    "255.255.240.0", "255.255.224.0", "255.255.192.0",
+                    "255.255.128.0", "255.255.0.0", "255.254.0.0",
+                    "255.252.0.0", "255.248.0.0", "255.240.0.0",
+                    "255.224.0.0", "255.192.0.0", "255.128.0.0", "255.0.0.0"
+                ];
+                return validSubnets.includes(subnet);
+            }
+
+
+            function checkPassiveInterface() {
+                const router1 = devices.find(d => d.label === 'Router 1');
+                return router1 && !router1.isPassive;
+            }
+
+            function checkIncorrectVersion() {
+                const routerA = devices.find(d => d.label === 'Router A');
+                const routerB = devices.find(d => d.label === 'Router B');
+                return routerA && routerB && routerA.ripVersion === routerB.ripVersion;
+            }
+
+            function checkSplitHorizon() {
+                const routerA = devices.find(d => d.label === 'Router A');
+                return routerA && !routerA.splitHorizonEnabled;
+            }
+
+            function checkHopCountExceeded() {
+                const maxHopCount = 15;
+                const hopCount = devices.length - 1;
+                return hopCount <= maxHopCount;
+            }
+
+            function checkTimersMismatch() {
+                const router1 = devices.find(d => d.label === 'Router 1');
+                const router2 = devices.find(d => d.label === 'Router 2');
+                if (router1 && router2 && router1.timers && router2.timers) {
+                    return router1.timers.update === router2.timers.update &&
+                           router1.timers.invalid === router2.timers.invalid &&
+                           router1.timers.holddown === router2.timers.holddown &&
+                           router1.timers.flush === router2.timers.flush;
+                }
+                return false;
+            }
+
+            function checkRouteFlapping() {
+                const unstableConnection = connections.find(c => c.unstable);
+                return unstableConnection ? unstableConnection.stabilized : true;
+            }
+
+            function checkRoutingLoops() {
+                const visited = new Set();
+                function dfs(device, parent) {
+                    if (visited.has(device)) return true;
+                    visited.add(device);
+                    const neighbors = connections
+                        .filter(c => c.device1 === device || c.device2 === device)
+                        .map(c => (c.device1 === device ? c.device2 : c.device1))
+                        .filter(neighbor => neighbor !== parent);
+                    for (let neighbor of neighbors) {
+                        if (dfs(neighbor, device)) return true;
+                    }
+                    return false;
+                }
+                for (let device of devices) {
+                    visited.clear();
+                    if (dfs(device, null)) return false;
+                }
+                return true;
+            }
+
+            function checkRouteSummarization() {
+                const mainRouter = devices.find(d => d.label === 'Main Router');
+                return mainRouter && mainRouter.routeSummarization;
+            }
+
+            function checkAuthenticationFailure() {
+                const routerX = devices.find(d => d.label === 'Router X');
+                const routerY = devices.find(d => d.label === 'Router Y');
+                return routerX && routerY && routerX.ripAuth === routerY.ripAuth && routerX.ripAuth !== '';
+            }
+
+            function resetScenarios() {
+                devices = [];
+                connections = [];
+                redrawCanvas();
+                showScenarioSelection();
+
+                // Reset the "Select Scenario" button text and style
+                const selectScenarioBtn = document.getElementById("select-scenario-btn");
+                selectScenarioBtn.textContent = "Select Scenario";
+                selectScenarioBtn.classList.remove('selected');
+
+                const topologySound = document.getElementById('bgSound');
+                topologySound.pause();
+                topologySound.loop = false;
+            }
+
+            document.getElementById("select-scenario-btn").addEventListener("click", resetScenarios);
+
+            function markScenarioAsCompleted(difficulty, problemType) {
+                const button = document.querySelector(`.select-btn[onclick="startScenario('${difficulty}', '${problemType}')"]`);
+                if (button) {
+                    console.log(`Marking scenario as completed: ${difficulty}, ${problemType}`); // Debug log
+                    button.classList.add('completed');
+                } else {
+                    console.log(`Button not found for: ${difficulty}, ${problemType}`); // Debug log
+                }
+            }
+
+            function closeProblemPopup() {
+                document.getElementById('problemPopup').style.display = 'none';
+            }
+
+            function playClickSound() {
+                const click = document.getElementById('clickSound');
+                const exit = document.getElementById('exitSound');
+                click.currentTime = 0;
+                click.play();
+                exit.pause();
+            }
+
+            function playExitSound() {
+                const exit = document.getElementById('exitSound');
+                const click = document.getElementById('clickSound');
+                exit.currentTime = 0;
+                exit.play();
+                click.pause();
+            }
+            // Add click sound to all buttons
+            document.querySelectorAll('button, .action-btn, .device').forEach(button => {
+                button.addEventListener('click', playClickSound);
+            });
+
+            document.querySelectorAll('i').forEach(button => {
+                button.addEventListener('click', playExitSound);
+            });
+        </script>
+    <audio id="clickSound" src="{{ url_for('static', filename='audio/Start.mp3') }}"></audio>
+    <audio id="exitSound" src="{{ url_for('static', filename='audio/Exit.mp3') }}"></audio>
+    <audio id="bgSound" src="{{ url_for('static', filename='audio/Bg_sound.mp3') }}"></audio>
+
+        {% endblock %}

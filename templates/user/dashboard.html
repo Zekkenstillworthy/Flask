@@ -1,0 +1,657 @@
+{% extends 'user/base.html' %} {% block head %}
+<title> Dashboard | RiddleNet</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body {
+    color: #fff;
+    overflow-x: hidden;
+    height: 100vh;
+    transition: 0.3s ease;
+    position: relative;
+  }
+  
+  .video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    object-fit: cover;
+  }
+
+  .main.active,
+  .about-us.active,
+  .profile.active ~ .leaderboard,
+  .leaderboard.active ~ .profile,
+  .profile.active ~ .main,
+  .leaderboard.active ~ .main {
+    filter: blur(15px);
+    pointer-events: none;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  .user-info,
+  .leaderboard-container {
+    height: 100%;
+    width: 100%;
+    background: transparent;
+    position: relative;
+    background: url("{{ url_for('static', filename='img/Bg.jpg') }}") no-repeat
+      center center fixed;
+    background-size: cover;
+  }
+
+  #about-us {
+    height: 100%;
+    width: 100%;
+    background: transparent;
+    position: relative;
+  }
+
+  .leaderboard-section,
+  .score-section,
+  .about-us {
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: transform 0.5s, opacity 0.5s;
+  }
+
+  .leaderboard-section.visible,
+  .score-section.visible,
+  .about-us.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .profile-section input::placeholder {
+    color: #fff; /* Change placeholder color to white */
+  }
+
+.quiz-section{
+  position: relative;
+  overflow: hidden;
+  height: 100vh;
+  transition: 0.3s ease;
+}
+
+.quiz-section video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/dashboard.css') }}"
+/>
+<link
+  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+  rel="stylesheet"
+/>
+<link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}" />
+{% endblock %} {% block body %}
+<video class="video-background" autoplay muted loop playsinline>
+    <source src="{{ url_for('static', filename='video/RiddleNet.mp4') }}" type="video/mp4">
+</video>
+
+<!-- Header -->
+<header class="header">
+  {% if user.profile_img %}
+  <img src="{{ url_for('static', filename=user.profile_img) }}" 
+  alt="Profile Image" 
+  style="height: 100px; width: 100px; border-radius: 100%; border: 2px solid #fff;"
+  class="profile-link"
+  >
+  {% else %}
+  <img
+    style="height: 100px; width: 100px; border-radius: 100%; border: 2px solid #fff;"
+    draggable="false"
+    src="{{ url_for('static', filename='img/Logo.png') }}"
+    alt="Logo"
+    class="profile-link"
+  />
+  {% endif %}
+
+  <nav class="navbar">
+    <a href="#dashboard" id="dashboard-link" class="active">Dashboard</a>
+    <a href="#leaderboard" id="leaderboard-link">Leaderboard</a>
+    <a href="#about-us" id="about-us-link">About Us</a>
+    <a href="{{ url_for('user.logout') }}">Log out</a>
+  </nav>
+</header>
+<section id="dashboard" class="main">
+  
+
+  
+
+  <div class="container">
+    <section class="quiz-section">
+      <video autoplay muted loop>
+        <source src="{{ url_for('static', filename='video/RiddleNet.mp4') }}" type="video/mp4">
+      </video>
+      <!-- Put result-box before quiz-box in the DOM structure so it appears on top -->
+      <div class="result-box">
+        <h2>Result!</h2>
+        <div class="percentage-container">
+          <div class="circular-progress">
+            <span class="progress-value">0%</span>
+          </div>
+          <span class="score-text">Your Score 0 out of 5</span>
+        </div>
+        <div class="buttons">
+          <button class="tryAgain-btn"><i class="fa-solid fa-arrow-rotate-right"></i></button>
+          <button class="goHome-result-btn"><i class='bx bxs-home'></i></button>
+        </div>
+      </div>
+      
+      <div class="quiz-box">
+        <h1>RiddleNet</h1>
+        <div class="quiz-header">
+          <span>Multiple Choice Riddle</span>
+          <span class="header-score"></span>
+        </div>
+        <h2 class="question-text">What does HTML stand for?</h2>
+        <div class="option-list"></div>
+        <!-- Add matching question container -->
+        <div class="matching-container" style="display:none;">
+          <div class="matching-instructions">Match items from the left column with their corresponding items on the right.</div>
+          <div class="matching-items">
+            <!-- Items will be dynamically added here -->
+          </div>
+          <div class="matching-dropdowns" style="display:none;">
+            <!-- Dropdown version will be populated here -->
+          </div>
+          <div class="matching-drag-drop" style="display:none;">
+            <div class="matching-sources">
+              <!-- Draggable items will be populated here -->
+            </div>
+            <div class="matching-targets">
+              <!-- Drop targets will be populated here -->
+            </div>
+          </div>
+          <div class="matching-feedback"></div>
+        </div>
+        <!-- Add essay question container -->
+        <div class="essay-container" style="display:none;">
+          <div class="essay-instructions">Write your response in the text area below.</div>
+          <textarea class="essay-input" placeholder="Enter your answer here..." rows="8"></textarea>
+          <p class="character-count">0 characters</p>
+          <div class="essay-controls">
+            <button class="submit-essay-btn">Submit Essay</button>
+          </div>
+          <div class="essay-feedback"></div>
+        </div>
+        <div class="quiz-footer">
+          <button class="goHome-quiz-btn"><i class='bx bxs-home'></i></button>
+          <span class="question-total">1 of 5 Questions</span>
+          <button class="next-btn"><i class='bx bxs-right-arrow'></i></button>
+        </div>
+      </div>
+    
+
+    
+  </section>
+
+    <!-- Home Section -->
+  <section class="home">
+    <div class="home-content">
+      <h1>RiddleNet</h1>
+      <p>The game may end, but the skills you’ve gained are just the beginning.</p>
+      <button class="start-btn">Start</button>
+    </div>
+  </section>
+  </div>
+
+  
+</section>
+
+<section id="leaderboard" class="leaderboards-container with-padding">
+  <!-- Leaderboard Section -->
+  <section  class="leaderboard-section">
+    <div class="leaderboard-container">
+      <h3>Riddle Leaderboard</h3>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Highest Score</th>
+            <th>Last Attempt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in leaderboard %}
+          <tr>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+            <td>{{ item[2].strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3">No leaderboard data available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Topology Leaderboard Section -->
+  <section id="leaderboard" class="leaderboard-section">
+    <div class="leaderboard-container">
+      <h3>Topology Leaderboard</h3>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Highest Score</th>
+            <th>Last Attempt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in topology_leaderboard %}
+          <tr>
+            <td>{{ item.username }}</td>
+            <td>{{ item.highest_score }}</td>
+            <td>{{ item.latest_attempt.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3">No leaderboard data available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Crimping Leaderboard Section -->
+  <section id="leaderboard" class="leaderboard-section">
+    <div class="leaderboard-container">
+      <h3>Crimping Leaderboard</h3>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Highest Score</th>
+            <th>Last Attempt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in crimping_leaderboard %}
+          <tr>
+            <td>{{ item.username }}</td>
+            <td>{{ item.highest_score }}</td>
+            <td>{{ item.latest_attempt.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3">No leaderboard data available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- troubleshoot Leaderboard Section -->
+  <section id="leaderboard" class="leaderboard-section">
+    <div class="leaderboard-container">
+      <h3>Troubleshoot Leaderboard</h3>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Highest Score</th>
+            <th>Last Attempt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in troubleshoot_leaderboard %}
+          <tr>
+            <td>{{ item.username }}</td>
+            <td>{{ item.highest_score }}</td>
+            <td>{{ item.latest_attempt.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3">No leaderboard data available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
+<!-- Profile Section -->
+<section id="profile" class="profile-section hidden">
+  <div class="profile-content">
+    <i class="bx bx-x profile-exit-btn"></i>
+    <h3>Profile</h3>
+    <form action="{{ url_for('user.update_profile') }}" method="POST" enctype="multipart/form-data">
+      <label for="profile_img">
+        <img id="profile-img-preview" src="{{ url_for('static', filename=user.profile_img) if user.profile_img else url_for('static', filename='img/Logo.png') }}" alt="Profile Image Preview" style="height: 200px; width: 200px; border-radius: 100%; margin: 10px auto; display: block; cursor: pointer; border: 2px solid #fff;">
+      </label>
+      <input type="file" id="profile_img" name="profile_img" accept="image/*" onchange="previewImage(event)" style="display: none;">
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="Username"
+        autocomplete="off"
+        required
+      />
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Password"
+        required
+      />
+      <button type="submit" class="profile-update-btn">Update</button>
+    </form>
+  </div>
+</section>
+
+<!-- Scores Section -->
+<section id="leaderboard"class="scores-section">
+  <div class="scores-container">
+    <h3>My Scores</h3>
+    <table id="scores-list" class="score-table">
+      <thead>
+        <tr>
+          <th>Score</th>
+          <th>Category</th> <!-- Add this line -->
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+          {% for score in score %}
+          <tr>
+            <td>{{ score.score }}</td>
+            <td>{{ score.category }}</td>
+            <td>{{ score.date_attempted.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>
+              <form action="{{ url_for('user.delete_score', score_id=score.id) }}" method="POST" style="display: inline">
+                <button type="submit" class="delete">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Popup Info -->
+<div class="popup-info">
+  
+    <i class="bx bx-x profile-exit-btn exit-btn "></i>
+  
+  <h2>Choose Category</h2>
+  <div class="choices-btn-group">
+    <button class="choice-btn" onclick="goToNetworkTopology()">
+      Network Topology
+    </button>
+    <button class="choice-btn continue-btn">
+    Riddle
+    </button>
+    <button class="choice-btn" onclick="goTotroubleshoot()">
+      Troubleshooting
+    </button>
+    <button class="choice-btn" onclick="goToCrimp()">
+      UTP Cable Crimping 
+    </button>
+  </div>
+  
+</div>
+
+<!-- About Us Section -->
+<section id="about-us" class="with-padding">
+<div  class="about-us" >
+  <div class="about-us-container">
+    <h2>About Us</h2>
+    <p class="about-description">
+      We are a team of four dedicated individuals contributing to the RiddleNet
+      project. Together, we bring innovation, creativity, and technical
+      expertise to provide interactive learning experiences.
+    </p>
+    <div class="about-us-list work-list">
+      <div class="about-card work">
+        <img
+          src="{{ url_for('static', filename='img/Gilbert.jpg') }}"
+          alt="Gilbert I. Requitud Jr."
+        />
+        <div class="layer">
+          <h3>Gilbert I. Requitud Jr.</h3>
+          <span>Project Lead & Developer</span>
+          <a href="https://web.facebook.com/profile.php?id=100013736235548">Learn more</a>
+        </div>
+      </div>
+      <!---
+      <div class="about-card work">
+        <img
+          src="{{ url_for('static', filename='img/Xavier.jpg') }}"
+          alt="Xavier Caparas"
+        />
+        <div class="layer">
+          <h3>Xavier Caparas</h3>
+          <span>Lead Designer</span>
+          <a href="https://web.facebook.com/cep.caparas.3">Learn more</a>
+        </div>
+      </div>
+      <div class="about-card work">
+        <img
+          src="{{ url_for('static', filename='img/Barron.png') }}"
+          alt="Prince Barron Rosendal"
+        />
+        <div class="layer">
+          <h3>Prince Barron Rosendal</h3>
+          <span>Backend Developer</span>
+          <a href="https://web.facebook.com/princebarron.0510">Learn more</a>
+        </div>
+      </div>
+      -->
+    </div>
+  </div>
+</div>
+</section>
+
+
+<script>
+  function goToNetworkTopology() {
+    location.href = "{{ url_for('user.topology') }}";
+  }
+
+  function goTotroubleshoot() {
+    location.href = "{{ url_for('user.troubleshoot') }}";
+  }
+
+  function goToCrimp() {
+    location.href = "{{ url_for('user.crimp') }}";
+  }
+
+  function previewImage(event) {
+    var reader = new FileReader();
+    reader.onload = function(){
+      var output = document.getElementById('profile-img-preview');
+      output.src = reader.result;
+      output.style.display = 'block';
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const sections = document.querySelectorAll('.leaderboard-section, .score-section, .about-us');
+
+    function checkVisibility() {
+      const triggerBottom = window.innerHeight / 5 * 4;
+
+      sections.forEach(section => {
+        const sectionTop = section.getBoundingClientRect().top;
+        const sectionBottom = section.getBoundingClientRect().bottom;
+
+        if (sectionTop < triggerBottom && sectionBottom > 0) {
+          section.classList.add('visible');
+        } else {
+          section.classList.remove('visible');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', checkVisibility);
+    checkVisibility();
+  });
+            function playClickSound() {
+                const click = document.getElementById('clickSound');
+                if (window.playSound) {
+                    window.playSound(click);
+                } else {
+                    // Fallback if playSound function isn't available yet
+                    click.currentTime = 0;
+                    const playPromise = click.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log("Click sound playback prevented:", error);
+                        });
+                    }
+                }
+            }
+
+            function playExitSound() {
+                const exit = document.getElementById('exitSound');
+                if (window.playSound) {
+                    window.playSound(exit);
+                } else {
+                    // Fallback if playSound function isn't available yet
+                    exit.currentTime = 0;
+                    const playPromise = exit.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log("Exit sound playback prevented:", error);
+                        });
+                    }
+                }
+                console.log('exit');
+            }
+
+            function playNavSound() {
+                const nav = document.getElementById('navSound');
+                if (window.playSound) {
+                    window.playSound(nav);
+                } else {
+                    // Fallback if playSound function isn't available yet
+                    nav.currentTime = 0;
+                    const playPromise = nav.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log("Nav sound playback prevented:", error);
+                        });
+                    }
+                }
+                console.log('nav');
+            }
+
+            // Export the sound functions to the window so they're globally available
+            window.playSound = function(sound) {
+                if (!sound) return;
+                
+                // Create a tracking variable for the current sound's play state
+                if (!window.audioPlayPromises) {
+                    window.audioPlayPromises = new Map();
+                }
+                
+                // If this sound is already playing and has a pending promise, wait for it
+                const existingPromise = window.audioPlayPromises.get(sound);
+                if (existingPromise) {
+                    existingPromise.then(() => {
+                        // Reset sound and play
+                        sound.currentTime = 0;
+                        startNewPlay(sound);
+                    }).catch(error => {
+                        // If previous promise was rejected (e.g. autoplay blocked), try again
+                        console.log("Previous play was interrupted:", error);
+                        startNewPlay(sound);
+                    });
+                } else {
+                    // No existing promise, start new play
+                    startNewPlay(sound);
+                }
+                
+                function startNewPlay(audio) {
+                    // Store the promise of the play operation
+                    const playPromise = audio.play();
+                    
+                    if (playPromise !== undefined) {
+                        window.audioPlayPromises.set(audio, playPromise);
+                        
+                        // When play is finished, remove from tracking
+                        playPromise.then(() => {
+                            window.audioPlayPromises.delete(audio);
+                        }).catch(error => {
+                            // Handle autoplay restrictions or other errors
+                            window.audioPlayPromises.delete(audio);
+                            console.log("Audio playback error or prevented by browser:", error);
+                        });
+                    }
+                }
+            };
+
+            function playCorrectSound() {
+                const correct = document.getElementById('correctSound');
+                const click = document.getElementById('clickSound');
+                correct.currentTime = 0;
+                correct.play();
+                click.pause();
+                console.log('Correct');
+            }
+
+            function playIncorrectSound() {
+                const incorrect = document.getElementById('incorrectSound');
+                const click = document.getElementById('clickSound');
+                incorrect.currentTime = 0;
+                incorrect.play();
+                click.pause();
+                console.log('Incorrect');
+            }
+
+            // Add click sound to all buttons
+            document.querySelectorAll('button, .action-btn, .device, img').forEach(button => {
+                button.addEventListener('click', playClickSound);
+            });
+
+            document.querySelectorAll('i').forEach(button => {
+                button.addEventListener('click', playExitSound);
+            });
+
+            document.querySelectorAll('a').forEach(button => {
+                button.addEventListener('click', playNavSound);
+            });
+
+  // Add this to debug questions loading
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard loaded - will fetch questions when quiz starts');
+  });
+</script>
+    <audio id="clickSound" src="{{ url_for('static', filename='audio/Start.mp3') }}"></audio>
+    <audio id="exitSound" src="{{ url_for('static', filename='audio/Exit.mp3') }}"></audio>
+    <audio id="navSound" src="{{ url_for('static', filename='audio/Nav.mp3') }}"></audio>
+    <audio id="correctSound" src="{{ url_for('static', filename='audio/Correct.mp3') }}"></audio>
+    <audio id="incorrectSound" src="{{ url_for('static', filename='audio/Incorrect.mp3') }}"></audio>
+    <audio id="bgSound" src="{{ url_for('static', filename='audio/Bg_sound.mp3') }}"></audio>
+
+{% if message %}
+<script>
+    alert("{{ message }}");
+</script>
+{% endif %}
+{% endblock %}

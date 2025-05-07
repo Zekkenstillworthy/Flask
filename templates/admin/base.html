@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/drag-drop-matching.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}">
+    {% block head %}{% endblock %}
+</head>
+<style>
+:root {
+    --primary-color: #00C3B5;
+    --dark-primary: #00645C;
+    --highlight-color: rgba(0, 255, 255, 0.1);
+    --text-color: #fff;
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 80px;
+    --transition-speed: 0.3s;
+    --border-radius: 8px;
+    --secondary-color: rgba(9, 0, 29, 0.9);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: #09001d;
+    color: var(--text-color);
+    display: flex;
+    position: relative;
+    min-height: 100vh;
+    background-image: url('/static/img/noise.png'), linear-gradient(to bottom right, #09001d, #150035);
+}
+
+/* Sidebar Styles */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--primary-color);
+    color: white;
+    transition: width var(--transition-speed) ease;
+    z-index: 100;
+    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+    padding: 0;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#sidebar .logo-details {
+    display: flex;
+    align-items: center;
+    padding: 20px 25px;
+    margin-bottom: 20px;
+}
+
+#sidebar .logo-icon {
+    height: 36px;
+    width: 36px;
+    margin-right: 12px;
+}
+
+#sidebar .logo-name {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+}
+
+#sidebar .logo-name span {
+    display: block;
+    font-size: 28px;
+    margin-bottom: -2px;
+}
+
+#sidebar ul {
+    padding: 0;
+    list-style-type: none;
+    margin: 0;
+}
+
+#sidebar ul li {
+    position: relative;
+    width: 100%;
+    margin: 0;
+}
+
+#sidebar ul li a {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    padding: 16px 25px;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+#sidebar ul li a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#sidebar ul li.active {
+    background-color: rgba(0, 150, 140, 0.8);
+}
+
+#sidebar ul li.active a {
+    background-color: transparent;
+}
+
+#sidebar ul li a i {
+    font-size: 20px;
+    min-width: 35px;
+    display: flex;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+#sidebar ul li a span {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Main Content Area */
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 25px;
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    box-sizing: border-box;
+    position: relative;
+    transition: margin-left var(--transition-speed) ease;
+    overflow-x: hidden;
+}
+
+/* Media queries for responsive sidebar */
+@media (max-width: 768px) {
+    #sidebar {
+        width: var(--sidebar-collapsed-width);
+    }
+    
+    #sidebar .logo-name {
+        opacity: 0;
+    }
+    
+    #sidebar ul li a span {
+        opacity: 0;
+    }
+    
+    .main-content {
+        margin-left: var(--sidebar-collapsed-width) !important;
+        width: calc(100% - var(--sidebar-collapsed-width));
+    }
+}
+</style>
+<body>
+{% block body %} 
+<nav id="sidebar">
+    <div class="logo-details">
+        <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-icon">
+        <div class="logo-name">
+            <span>RiddleNet</span>
+            Admin
+        </div>
+    </div>
+    
+    <ul>
+        <li {% if active_page == 'dashboard' %}class="active"{% endif %}>
+            <a href="{{ url_for('dashboard.index') }}">
+                <i class='bx bx-grid-alt'></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li {% if active_page == 'classes' %}class="active"{% endif %}>
+            <a href="{{ url_for('class_controller.index') }}">
+                <i class='bx bx-laptop'></i>
+                <span>Classes</span>
+            </a>
+        </li>
+        <li {% if active_page == 'users' %}class="active"{% endif %}>
+            <a href="{{ url_for('dashboard.user_management') }}">
+                <i class='bx bx-user'></i>
+                <span>Users</span>
+            </a>
+        </li>
+        <li {% if active_page == 'scores' %}class="active"{% endif %}>
+            <a href="{{ url_for('score.index') }}">
+                <i class='bx bx-trophy'></i>
+                <span>Scores</span>
+            </a>
+        </li>
+        <li {% if active_page == 'questions' %}class="active"{% endif %}>
+            <a href="{{ url_for('question.index') }}">
+                <i class='bx bx-help-circle'></i>
+                <span>Questions</span>
+            </a>
+        </li>
+        <li {% if active_page == 'essays' %}class="active"{% endif %}>
+            <a href="{{ url_for('essay.index') }}">
+                <i class='bx bx-file'></i>
+                <span>Essay Responses</span>
+            </a>
+        </li>
+        <li {% if active_page == 'scenarios' %}class="active"{% endif %}>
+            <a href="{{ url_for('scenario.index') }}">
+                <i class='bx bx-landscape'></i>
+                <span>Scenarios</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{ url_for('auth.logout') }}">
+                <i class='bx bx-log-out'></i>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}    
+</body>
+</html>

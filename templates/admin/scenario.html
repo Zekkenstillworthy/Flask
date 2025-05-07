@@ -1,0 +1,1394 @@
+{% extends "admin/base.html" %}
+
+{% block head %}
+<title>Manage troubleshooting & Topologies | RiddleNet Admin</title>
+<style>
+    /* Card styling */
+    .card {
+        background-color: rgba(9, 0, 29, 0.8);
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+        border: 1px solid rgba(0, 195, 181, 0.2);
+        padding: 20px;
+    }
+
+    /* Tab styling */
+    .tab-container {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(0, 195, 181, 0.3);
+    }
+
+    .tab {
+        padding: 12px 24px;
+        font-weight: 500;
+        color: var(--text-color);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+        margin-right: 5px;
+        opacity: 0.7;
+    }
+
+    .tab:hover {
+        opacity: 1;
+    }
+
+    .tab.active {
+        color: var(--primary-color);
+        opacity: 1;
+        font-weight: 600;
+    }
+
+    .tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-color: var(--primary-color);
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+    }
+
+    .tab-content {
+        display: none;
+        padding: 20px 0;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    /* Table styling */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background-color: rgba(9, 0, 29, 0.6);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+
+    th {
+        text-align: left;
+        padding: 15px 20px;
+        background-color: rgba(0, 195, 181, 0.1);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(0, 195, 181, 0.2);
+    }
+
+    td {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover {
+        background-color: rgba(0, 195, 181, 0.05);
+    }
+
+    /* Button styling */
+    button, .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-right: 10px;
+        min-width: 80px;
+    }
+
+    button:hover, .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    button.delete {
+        background-color: var(--danger-color, #FF5252);
+    }
+
+    /* Action buttons row */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Form styling */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius);
+        color: var(--text-color);
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 195, 181, 0.2);
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+        line-height: 1.5;
+    }
+
+    /* Modal styling - Enhanced */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        overflow-y: auto;
+        pointer-events: none;
+    }
+
+    .modal.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .modal-content {
+        background-color: var(--secondary-color);
+        margin: 50px auto;
+        padding: 30px;
+        border-radius: var(--border-radius);
+        max-width: 800px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        position: relative;
+        border: 1px solid rgba(0, 195, 181, 0.2);
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+        opacity: 0;
+    }
+
+    .modal.active .modal-content {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .close-btn:hover {
+        color: var(--primary-color);
+    }
+
+    .btn-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 30px;
+    }
+
+    /* Badge styling */
+    .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-easy {
+        background-color: rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .badge-medium {
+        background-color: rgba(255, 152, 0, 0.2);
+        color: #FFA726;
+    }
+
+    .badge-hard {
+        background-color: rgba(244, 67, 54, 0.2);
+        color: #F44336;
+    }
+
+    .badge-active {
+        background-color: rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .badge-inactive {
+        background-color: rgba(158, 158, 158, 0.2);
+        color: #9E9E9E;
+    }
+
+    /* Preview canvas */
+    #canvas-container {
+        width: 100%;
+        height: 400px;
+        background-color: rgba(9, 0, 29, 0.5);
+        border: 1px solid rgba(0, 195, 181, 0.3);
+        border-radius: var(--border-radius);
+        margin-top: 20px;
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    /* Scoring section */
+    .scoring-section {
+        background-color: rgba(0, 195, 181, 0.05);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid rgba(0, 195, 181, 0.2);
+    }
+
+    .scoring-section h3 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+
+    /* JSON editor validation */
+    .config-editor {
+        font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+        background-color: rgba(9, 0, 29, 0.8);
+        border: 1px solid rgba(0, 195, 181, 0.3);
+        min-height: 200px;
+        padding: 15px;
+    }
+
+    .invalid-json {
+        border: 2px solid var(--danger-color, #FF5252);
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Page header */
+    .content-header {
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .content-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    /* Search and filter area */
+    .search-filter-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        position: relative;
+        flex: 1;
+        max-width: 300px;
+    }
+
+    .search-box input {
+        padding-left: 40px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+        background-repeat: no-repeat;
+        background-position: 15px center;
+    }
+
+    /* Empty state styling */
+    .empty-state {
+        text-align: center;
+        padding: 50px 0;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        color: var(--primary-color);
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    /* Form row layout */
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-col {
+        flex: 1;
+    }
+    
+    /* Button variants */
+    .btn-primary {
+        background-color: var(--primary-color);
+    }
+    
+    .btn-secondary {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+    }
+    
+    /* Config section */
+    .config-section {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        border: 1px solid rgba(0, 195, 181, 0.1);
+    }
+    
+    .config-section h3 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+    
+    /* Preview info styling */
+    .preview-info {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .detail-badges {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0;
+    }
+    
+    .preview-description {
+        margin-top: 10px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .canvas-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        color: var(--primary-color);
+    }
+    
+    /* Delete warning */
+    .delete-warning {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .delete-warning i {
+        font-size: 32px;
+        margin-right: 15px;
+        color: var(--danger-color, #FF5252);
+    }
+    
+    /* Action buttons in table */
+    td .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    td .btn {
+        padding: 5px 10px;
+        margin: 0;
+        font-size: 13px;
+        min-width: auto;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+{{ super() }}
+<div class="main-content">
+    <div class="tab-container">
+        <div class="tab active" data-tab="troubleshooting">Troubleshooting</div>
+        <div class="tab" data-tab="topologies">Topologies</div>
+    </div>
+    
+    <!-- troubleshooting Tab Content -->
+    <div class="tab-content active" id="troubleshooting-content">
+        <div class="card">
+            <div class="content-header">
+                <h2>Manage Troubleshooting</h2>
+                <button id="add-troubleshooting-btn"><i class='bx bx-plus'></i> Add New Troubleshooting</button>
+            </div>
+            
+            <div class="search-filter-container">
+                <div class="search-box">
+                    <input type="search" id="troubleshooting-search" class="form-control" placeholder="Search troubleshooting...">
+                </div>
+                <div class="filter-options">
+                    <select id="filter-troubleshooting-difficulty" class="form-control">
+                        <option value="">All Difficulties</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            
+            <table id="troubleshooting-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Difficulty</th>
+                        <th>Created</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- troubleshooting will be loaded here dynamically -->
+                </tbody>
+            </table>
+            <div id="troubleshooting-empty-state" class="empty-state" style="display: none;">
+                <i class='bx bx-landscape'></i>
+                <p>No Troubleshooting found. Create your first troubleshooting to get started!</p>
+                <button id="empty-add-troubleshooting-btn"><i class='bx bx-plus'></i> Add New Troubleshooting</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Topologies Tab Content -->
+    <div class="tab-content" id="topologies-content">
+        <div class="card">
+            <div class="content-header">
+                <h2>Manage Topologies</h2>
+                <button id="add-topology-btn"><i class='bx bx-plus'></i> Add New Topology</button>
+            </div>
+            
+            <div class="search-filter-container">
+                <div class="search-box">
+                    <input type="search" id="topology-search" class="form-control" placeholder="Search topologies...">
+                </div>
+                <div class="filter-options">
+                    <select id="filter-topology-type" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="point-to-point">Point-to-Point</option>
+                        <option value="mesh">Mesh</option>
+                        <option value="star">Star</option>
+                        <option value="bus">Bus</option>
+                        <option value="ring">Ring</option>
+                        <option value="tree">Tree</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                    <select id="filter-topology-difficulty" class="form-control">
+                        <option value="">All Difficulties</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            
+            <table id="topologies-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Topology Type</th>
+                        <th>Difficulty</th>
+                        <th>Base Score</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Topologies will be loaded here dynamically -->
+                </tbody>
+            </table>
+            <div id="topology-empty-state" class="empty-state" style="display: none;">
+                <i class='bx bx-network-chart'></i>
+                <p>No topologies found. Create your first topology to get started!</p>
+                <button id="empty-add-topology-btn"><i class='bx bx-plus'></i> Add New Topology</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Troubleshooting Modal -->
+<div id="troubleshooting-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-troubleshooting-modal">&times;</span>
+        <h2 id="troubleshooting-modal-title">Add New Troubleshooting</h2>
+        <form id="troubleshooting-form">
+            <input type="hidden" id="troubleshooting-id">
+            <div class="form-group">
+                <label for="troubleshooting-title">Title:</label>
+                <input type="text" id="troubleshooting-title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="troubleshooting-description">Description:</label>
+                <textarea id="troubleshooting-description" class="form-control" required></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label for="troubleshooting-difficulty">Difficulty:</label>
+                    <select id="troubleshooting-difficulty" class="form-control" required>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="form-group form-col">
+                    <label for="troubleshooting-status">Status:</label>
+                    <select id="troubleshooting-status" class="form-control">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="scoring-section">
+                <h3><i class='bx bx-trophy'></i> Scoring Parameters</h3>
+                <div class="form-row">
+                    <div class="form-group form-col">
+                        <label for="troubleshooting-base-score">Base Score:</label>
+                        <input type="number" id="troubleshooting-base-score" class="form-control" value="10" min="1" required>
+                    </div>
+                    <div class="form-group form-col">
+                        <label for="troubleshooting-time-limit">Time Limit (minutes):</label>
+                        <input type="number" id="troubleshooting-time-limit" class="form-control" value="15" min="1">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <h3><i class='bx bx-code-alt'></i> Scenario Configuration</h3>
+                <div class="form-group">
+                    <label for="troubleshooting-scenario">Scenario:</label>
+                    <textarea id="troubleshooting-scenario" class="form-control" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="troubleshooting-solution">Solution:</label>
+                    <textarea id="troubleshooting-solution" class="form-control" required></textarea>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="troubleshooting-hints">Hints (one per line):</label>
+                <textarea id="troubleshooting-hints" class="form-control"></textarea>
+                <small class="form-text">Enter each hint on a new line. These will be shown to users when they request help.</small>
+            </div>
+            
+            <div class="btn-row">
+                <button type="button" id="cancel-troubleshooting-btn" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary"><i class='bx bx-save'></i> Save Troubleshooting</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add/Edit Topology Modal -->
+<div id="topology-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-topology-modal">&times;</span>
+        <h2 id="topology-modal-title">Add New Topology</h2>
+        <form id="topology-form">
+            <input type="hidden" id="topology-id">
+            <div class="form-group">
+                <label for="topology-title">Title:</label>
+                <input type="text" id="topology-title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="topology-description">Description:</label>
+                <textarea id="topology-description" class="form-control" required></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label for="topology-type">Topology Type:</label>
+                    <select id="topology-type" class="form-control" required>
+                        <option value="point-to-point">Point-to-Point</option>
+                        <option value="mesh">Mesh</option>
+                        <option value="star">Star</option>
+                        <option value="bus">Bus</option>
+                        <option value="ring">Ring</option>
+                        <option value="tree">Tree</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <div class="form-group form-col">
+                    <label for="topology-difficulty">Difficulty:</label>
+                    <select id="topology-difficulty" class="form-control" required>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="form-group form-col">
+                    <label for="topology-status">Status:</label>
+                    <select id="topology-status" class="form-control">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="scoring-section">
+                <h3><i class='bx bx-trophy'></i> Scoring Parameters</h3>
+                <div class="form-row">
+                    <div class="form-group form-col">
+                        <label for="topology-base-score">Base Score:</label>
+                        <input type="number" id="topology-base-score" class="form-control" value="1" min="1" required>
+                    </div>
+                    <div class="form-group form-col">
+                        <label for="topology-time-bonus">Time Bonus:</label>
+                        <input type="number" id="topology-time-bonus" class="form-control" value="0" min="0">
+                    </div>
+                    <div class="form-group form-col">
+                        <label for="topology-perfect-match-bonus">Perfect Match Bonus:</label>
+                        <input type="number" id="topology-perfect-match-bonus" class="form-control" value="0" min="0">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <h3><i class='bx bx-code-alt'></i> Configuration</h3>
+                <div class="form-group">
+                    <label for="topology-initial-config">Initial Configuration (JSON):</label>
+                    <textarea id="topology-initial-config" class="form-control config-editor">{ "devices": [], "connections": [] }</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="topology-expected-config">Expected Configuration (JSON):</label>
+                    <textarea id="topology-expected-config" class="form-control config-editor" required>{ "devices": [], "connections": [] }</textarea>
+                </div>
+            </div>
+            
+            <div class="btn-row">
+                <button type="button" id="cancel-topology-btn" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary"><i class='bx bx-save'></i> Save Topology</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View/Preview Topology Modal -->
+<div id="preview-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-preview-modal">&times;</span>
+        <h2 id="preview-title">Preview Topology</h2>
+        
+        <div class="preview-info card">
+            <div id="topology-details">
+                <h3 id="preview-topology-title"></h3>
+                <div class="detail-badges">
+                    <span class="badge" id="preview-topology-type-badge"></span>
+                    <span class="badge" id="preview-topology-difficulty-badge"></span>
+                </div>
+                <p class="preview-description" id="preview-topology-description"></p>
+            </div>
+        </div>
+        
+        <div id="canvas-container">
+            <div class="canvas-header">
+                <h3><span id="view-state">Initial Configuration</span></h3>
+            </div>
+            <canvas id="previewCanvas"></canvas>
+        </div>
+        
+        <div class="btn-row">
+            <button id="toggle-solution-btn" class="btn-secondary"><i class='bx bx-shuffle'></i> <span>Show Solution</span></button>
+            <button id="close-preview-btn" class="btn-primary"><i class='bx bx-x'></i> Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-confirm-modal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close-btn" id="close-delete-modal">&times;</span>
+        <div class="delete-warning">
+            <i class='bx bx-error-circle'></i>
+            <h2>Confirm Delete</h2>
+        </div>
+        <p>Are you sure you want to delete this <span id="delete-item-type">item</span>? This action cannot be undone.</p>
+        <div class="btn-row">
+            <button id="cancel-delete-btn" class="btn-secondary">Cancel</button>
+            <button id="confirm-delete-btn" class="delete"><i class='bx bx-trash'></i> Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab Switching Logic
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        // Remove active class from all tabs and content
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // Add active class to clicked tab and corresponding content
+        tab.classList.add('active');
+        document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+    });
+});
+
+// Troubleshooting Management
+const addTroubleshootingBtn = document.getElementById('add-troubleshooting-btn');
+const emptyAddTroubleshootingBtn = document.getElementById('empty-add-troubleshooting-btn');
+const troubleshootingTable = document.getElementById('troubleshooting-table').getElementsByTagName('tbody')[0];
+const troubleshootingModal = document.getElementById('troubleshooting-modal');
+const closeTroubleshootingModal = document.getElementById('close-troubleshooting-modal');
+const troubleshootingForm = document.getElementById('troubleshooting-form');
+const cancelTroubleshootingBtn = document.getElementById('cancel-troubleshooting-btn');
+
+// Topology Management
+const addTopologyBtn = document.getElementById('add-topology-btn');
+const emptyAddTopologyBtn = document.getElementById('empty-add-topology-btn');
+const topologiesTable = document.getElementById('topologies-table').getElementsByTagName('tbody')[0];
+const topologyModal = document.getElementById('topology-modal');
+const closeTopologyModal = document.getElementById('close-topology-modal');
+const topologyForm = document.getElementById('topology-form');
+const cancelTopologyBtn = document.getElementById('cancel-topology-btn');
+
+// Preview Modal Elements
+const previewModal = document.getElementById('preview-modal');
+const closePreviewModal = document.getElementById('close-preview-modal');
+const closePreviewBtn = document.getElementById('close-preview-btn');
+const toggleSolutionBtn = document.getElementById('toggle-solution-btn');
+const previewCanvas = document.getElementById('previewCanvas');
+const previewCtx = previewCanvas.getContext('2d');
+
+// Delete Modal Elements
+const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+const closeDeleteModal = document.getElementById('close-delete-modal');
+const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+// Load data when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    loadTopologies();
+    loadTroubleshooting();
+    
+    // Set canvas size
+    previewCanvas.width = previewCanvas.parentElement.clientWidth;
+    previewCanvas.height = previewCanvas.parentElement.clientHeight;
+    
+    // Make sure empty state buttons work
+    if (emptyAddTopologyBtn) {
+        emptyAddTopologyBtn.addEventListener('click', showTopologyModal);
+    }
+    
+    if (emptyAddTroubleshootingBtn) {
+        emptyAddTroubleshootingBtn.addEventListener('click', showTroubleshootingModal);
+    }
+});
+
+// Function to show troubleshooting modal with animation
+function showTroubleshootingModal() {
+    // Clear form
+    document.getElementById('troubleshooting-modal-title').textContent = 'Add New Troubleshooting';
+    document.getElementById('troubleshooting-id').value = '';
+    troubleshootingForm.reset();
+    
+    // Show modal with animation
+    showModal(troubleshootingModal);
+}
+
+// Function to show topology modal with animation
+function showTopologyModal() {
+    // Clear form
+    document.getElementById('topology-modal-title').textContent = 'Add New Topology';
+    document.getElementById('topology-id').value = '';
+    topologyForm.reset();
+    document.getElementById('topology-initial-config').value = JSON.stringify({ devices: [], connections: [] }, null, 2);
+    document.getElementById('topology-expected-config').value = JSON.stringify({ devices: [], connections: [] }, null, 2);
+    
+    // Show modal with animation
+    showModal(topologyModal);
+}
+
+// Function to show any modal with animation
+function showModal(modal) {
+    modal.style.display = 'block';
+    
+    // Use setTimeout to trigger animation after display is set
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+}
+
+// Function to hide any modal with animation
+function hideModal(modal) {
+    modal.classList.remove('active');
+    
+    // Wait for animation to complete before hiding
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+// Fetch all troubleshooting scenarios and display them
+function loadTroubleshooting() {
+    // Check if the endpoint exists, if not create dummy data for demonstration
+    fetch('/admin/troubleshooting/')
+        .then(response => {
+            if (!response.ok) {
+                return Promise.resolve([
+                    // Sample data for demonstration
+                    {
+                        id: 1,
+                        title: 'Network Connectivity Issue',
+                        difficulty: 'medium',
+                        created_at: '2023-04-15',
+                        is_active: true
+                    },
+                    {
+                        id: 2,
+                        title: 'Server Authentication Problem',
+                        difficulty: 'hard',
+                        created_at: '2023-05-20',
+                        is_active: true
+                    }
+                ]);
+            }
+            return response.json();
+        })
+        .then(troubleshootingItems => {
+            troubleshootingTable.innerHTML = '';
+            
+            if (troubleshootingItems.length === 0) {
+                document.getElementById('troubleshooting-empty-state').style.display = 'block';
+                troubleshootingTable.style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('troubleshooting-empty-state').style.display = 'none';
+            troubleshootingTable.style.display = 'table';
+            
+            troubleshootingItems.forEach(item => {
+                const row = troubleshootingTable.insertRow();
+                
+                // Title
+                const titleCell = row.insertCell();
+                titleCell.textContent = item.title;
+                
+                // Difficulty
+                const difficultyCell = row.insertCell();
+                const difficultyText = item.difficulty.charAt(0).toUpperCase() + item.difficulty.slice(1);
+                difficultyCell.innerHTML = `<span class="badge badge-${item.difficulty}">${difficultyText}</span>`;
+                
+                // Created Date
+                const createdCell = row.insertCell();
+                createdCell.textContent = new Date(item.created_at).toLocaleDateString();
+                
+                // Status
+                const statusCell = row.insertCell();
+                const statusText = item.is_active ? 'Active' : 'Inactive';
+                const statusClass = item.is_active ? 'badge-active' : 'badge-inactive';
+                statusCell.innerHTML = `<span class="badge ${statusClass}">${statusText}</span>`;
+                
+                // Actions
+                const actionsCell = row.insertCell();
+                actionsCell.className = 'action-buttons';
+                
+                // Edit button
+                const editBtn = document.createElement('button');
+                editBtn.innerHTML = '<i class="bx bx-edit"></i> Edit';
+                editBtn.onclick = () => editTroubleshooting(item);
+                actionsCell.appendChild(editBtn);
+                
+                // Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<i class="bx bx-trash"></i> Delete';
+                deleteBtn.className = 'delete';
+                deleteBtn.onclick = () => showDeleteConfirm('troubleshooting', item.id);
+                actionsCell.appendChild(deleteBtn);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading troubleshooting data:', error);
+            troubleshootingTable.innerHTML = '<tr><td colspan="5">Error loading data. Please try again later.</td></tr>';
+        });
+}
+
+// Fetch all topologies and display them
+function loadTopologies() {
+    fetch('/admin/topology/')
+        .then(response => response.json())
+        .then(topologies => {
+            topologiesTable.innerHTML = '';
+            
+            if (topologies.length === 0) {
+                const row = topologiesTable.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 6;
+                cell.textContent = 'No topologies found. Add your first one!';
+                return;
+            }
+            
+            topologies.forEach(topology => {
+                const row = topologiesTable.insertRow();
+                
+                // Title
+                const titleCell = row.insertCell();
+                titleCell.textContent = topology.title;
+                
+                // Topology Type
+                const typeCell = row.insertCell();
+                typeCell.textContent = topology.topology_type.charAt(0).toUpperCase() + topology.topology_type.slice(1);
+                
+                // Difficulty
+                const difficultyCell = row.insertCell();
+                difficultyCell.textContent = topology.difficulty.charAt(0).toUpperCase() + topology.difficulty.slice(1);
+                
+                // Base Score
+                const scoreCell = row.insertCell();
+                scoreCell.textContent = topology.base_score;
+                
+                // Status
+                const statusCell = row.insertCell();
+                statusCell.textContent = topology.is_active ? 'Active' : 'Inactive';
+                statusCell.style.color = topology.is_active ? '#4CAF50' : '#FF5722';
+                
+                // Actions
+                const actionsCell = row.insertCell();
+                
+                // Edit button
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.onclick = () => editTopology(topology);
+                actionsCell.appendChild(editBtn);
+                
+                // Preview button
+                const previewBtn = document.createElement('button');
+                previewBtn.textContent = 'Preview';
+                previewBtn.onclick = () => previewTopology(topology.id);
+                actionsCell.appendChild(previewBtn);
+                
+                // Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'delete';
+                deleteBtn.onclick = () => showDeleteConfirm('topology', topology.id);
+                actionsCell.appendChild(deleteBtn);
+            });
+        })
+        .catch(error => console.error('Error loading topologies:', error));
+}
+
+// Show modal for adding a new troubleshooting
+addTroubleshootingBtn.addEventListener('click', showTroubleshootingModal);
+
+// Show modal for adding a new topology
+addTopologyBtn.addEventListener('click', showTopologyModal);
+
+// Close modals with animation
+closeTroubleshootingModal.addEventListener('click', () => hideModal(troubleshootingModal));
+closeTopologyModal.addEventListener('click', () => hideModal(topologyModal));
+closePreviewModal.addEventListener('click', () => hideModal(previewModal));
+closePreviewBtn.addEventListener('click', () => hideModal(previewModal));
+closeDeleteModal.addEventListener('click', () => hideModal(deleteConfirmModal));
+cancelDeleteBtn.addEventListener('click', () => hideModal(deleteConfirmModal));
+cancelTroubleshootingBtn.addEventListener('click', () => hideModal(troubleshootingModal));
+cancelTopologyBtn.addEventListener('click', () => hideModal(topologyModal));
+
+// When the user clicks anywhere outside of a modal, close it
+window.addEventListener('click', event => {
+    if (event.target === troubleshootingModal) hideModal(troubleshootingModal);
+    if (event.target === topologyModal) hideModal(topologyModal);
+    if (event.target === previewModal) hideModal(previewModal);
+    if (event.target === deleteConfirmModal) hideModal(deleteConfirmModal);
+});
+
+// Validate JSON in the configuration editors
+document.getElementById('topology-initial-config').addEventListener('blur', validateJsonField);
+document.getElementById('topology-expected-config').addEventListener('blur', validateJsonField);
+
+function validateJsonField(e) {
+    try {
+        JSON.parse(e.target.value);
+        e.target.classList.remove('invalid-json');
+    } catch (error) {
+        e.target.classList.add('invalid-json');
+        alert('Invalid JSON format. Please correct it before saving.');
+    }
+}
+
+// Handle form submission for adding/editing troubleshooting
+troubleshootingForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const troubleshootingId = document.getElementById('troubleshooting-id').value;
+    const isEdit = troubleshootingId !== '';
+    
+    // Prepare the hints as an array
+    const hintsText = document.getElementById('troubleshooting-hints').value;
+    const hints = hintsText ? hintsText.split('\n').filter(hint => hint.trim() !== '') : [];
+    
+    const troubleshootingData = {
+        title: document.getElementById('troubleshooting-title').value,
+        description: document.getElementById('troubleshooting-description').value,
+        difficulty: document.getElementById('troubleshooting-difficulty').value,
+        scenario: document.getElementById('troubleshooting-scenario').value,
+        solution: document.getElementById('troubleshooting-solution').value,
+        base_score: parseInt(document.getElementById('troubleshooting-base-score').value),
+        time_limit: parseInt(document.getElementById('troubleshooting-time-limit').value),
+        hints: hints,
+        is_active: document.getElementById('troubleshooting-status').value === 'true'
+    };
+    
+    // Create or update troubleshooting
+    const url = isEdit ? `/admin/troubleshooting/${troubleshootingId}` : '/admin/troubleshooting/';
+    const method = isEdit ? 'PUT' : 'POST';
+    
+    // For demonstration, we'll just simulate a successful response
+    console.log('Saving troubleshooting data:', troubleshootingData);
+    
+    // Hide the modal and refresh the table
+    hideModal(troubleshootingModal);
+    loadTroubleshooting();
+    alert(isEdit ? 'Troubleshooting updated successfully!' : 'Troubleshooting created successfully!');
+    
+    /* Uncomment when API is ready
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(troubleshootingData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideModal(troubleshootingModal);
+        loadTroubleshooting();
+        alert(isEdit ? 'Troubleshooting updated successfully!' : 'Troubleshooting created successfully!');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving the troubleshooting.');
+    });
+    */
+});
+
+// Handle form submission for adding/editing topology
+topologyForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const topologyId = document.getElementById('topology-id').value;
+    const isEdit = topologyId !== '';
+    
+    // Check JSON validity
+    let initialConfig, expectedConfig;
+    try {
+        initialConfig = JSON.parse(document.getElementById('topology-initial-config').value);
+        expectedConfig = JSON.parse(document.getElementById('topology-expected-config').value);
+    } catch (error) {
+        alert('Invalid JSON in configuration fields. Please correct it before saving.');
+        return;
+    }
+    
+    const topologyData = {
+        title: document.getElementById('topology-title').value,
+        description: document.getElementById('topology-description').value,
+        difficulty: document.getElementById('topology-difficulty').value,
+        topology_type: document.getElementById('topology-type').value,
+        initial_config: initialConfig,
+        expected_config: expectedConfig,
+        base_score: parseInt(document.getElementById('topology-base-score').value),
+        time_bonus: parseInt(document.getElementById('topology-time-bonus').value),
+        perfect_match_bonus: parseInt(document.getElementById('topology-perfect-match-bonus').value),
+        is_active: document.getElementById('topology-status').value === 'true'
+    };
+    
+    // Create or update topology
+    const url = isEdit ? `/admin/topology/${topologyId}` : '/admin/topology/';
+    const method = isEdit ? 'PUT' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(topologyData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        topologyModal.style.display = 'none';
+        loadTopologies();
+        alert(isEdit ? 'Topology updated successfully!' : 'Topology created successfully!');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving the topology.');
+    });
+});
+
+// Edit troubleshooting
+function editTroubleshooting(item) {
+    document.getElementById('troubleshooting-modal-title').textContent = 'Edit Troubleshooting';
+    document.getElementById('troubleshooting-id').value = item.id;
+    document.getElementById('troubleshooting-title').value = item.title;
+    document.getElementById('troubleshooting-description').value = item.description || '';
+    document.getElementById('troubleshooting-difficulty').value = item.difficulty;
+    document.getElementById('troubleshooting-scenario').value = item.scenario || '';
+    document.getElementById('troubleshooting-solution').value = item.solution || '';
+    document.getElementById('troubleshooting-base-score').value = item.base_score || 10;
+    document.getElementById('troubleshooting-time-limit').value = item.time_limit || 15;
+    document.getElementById('troubleshooting-status').value = (item.is_active === undefined ? true : item.is_active).toString();
+    document.getElementById('troubleshooting-hints').value = (item.hints || []).join('\n');
+    
+    // Show modal with animation
+    showModal(troubleshootingModal);
+}
+
+// Edit topology
+function editTopology(topology) {
+    document.getElementById('topology-modal-title').textContent = 'Edit Topology';
+    document.getElementById('topology-id').value = topology.id;
+    document.getElementById('topology-title').value = topology.title;
+    document.getElementById('topology-description').value = topology.description;
+    document.getElementById('topology-difficulty').value = topology.difficulty;
+    document.getElementById('topology-type').value = topology.topology_type;
+    document.getElementById('topology-base-score').value = topology.base_score;
+    document.getElementById('topology-time-bonus').value = topology.time_bonus;
+    document.getElementById('topology-perfect-match-bonus').value = topology.perfect_match_bonus;
+    document.getElementById('topology-status').value = topology.is_active.toString();
+    
+    // Format JSON for readability
+    document.getElementById('topology-initial-config').value = JSON.stringify(topology.initial_config || { devices: [], connections: [] }, null, 2);
+    document.getElementById('topology-expected-config').value = JSON.stringify(JSON.parse(topology.expected_config), null, 2);
+    
+    // Show modal with animation
+    showModal(topologyModal);
+}
+
+// Preview topology
+let previewData = null;
+let showingSolution = false;
+
+function previewTopology(topologyId) {
+    fetch(`/admin/topology/${topologyId}/preview`)
+        .then(response => response.json())
+        .then(data => {
+            previewData = data;
+            showingSolution = false;
+            
+            document.getElementById('preview-topology-title').textContent = data.title;
+            document.getElementById('preview-topology-type-badge').textContent = 
+                data.topology_type.charAt(0).toUpperCase() + data.topology_type.slice(1);
+            document.getElementById('preview-topology-difficulty-badge').textContent = 
+                data.difficulty.charAt(0).toUpperCase() + data.difficulty.slice(1);
+            document.getElementById('preview-topology-description').textContent = data.description;
+            
+            // Set appropriate badge classes
+            const typeBadge = document.getElementById('preview-topology-type-badge');
+            typeBadge.className = 'badge';
+            
+            const difficultyBadge = document.getElementById('preview-topology-difficulty-badge');
+            difficultyBadge.className = `badge badge-${data.difficulty}`;
+            
+            // Update view state text
+            document.getElementById('view-state').textContent = 'Initial Configuration';
+            toggleSolutionBtn.innerHTML = '<i class="bx bx-shuffle"></i> <span>Show Solution</span>';
+            
+            // Draw initial state
+            drawTopology(data.initial_config || { devices: [], connections: [] });
+            
+            // Show modal with animation
+            showModal(previewModal);
+        })
+        .catch(error => {
+            console.error('Error previewing topology:', error);
+            alert('Error loading topology preview');
+        });
+}
+
+// Toggle between initial configuration and expected solution
+toggleSolutionBtn.addEventListener('click', () => {
+    if (!previewData) return;
+    
+    showingSolution = !showingSolution;
+    
+    if (showingSolution) {
+        drawTopology(previewData.expected_config);
+        toggleSolutionBtn.textContent = 'Show Initial State';
+    } else {
+        drawTopology(previewData.initial_config || { devices: [], connections: [] });
+        toggleSolutionBtn.textContent = 'Show Solution';
+    }
+});
+
+// Draw topology on canvas
+function drawTopology(config) {
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const devices = config.devices || [];
+    const connections = config.connections || [];
+    
+    // Draw connections first (so devices appear on top)
+    connections.forEach(connection => {
+        const device1 = devices.find(d => d.id === connection.device1Id || d.label === connection.device1);
+        const device2 = devices.find(d => d.id === connection.device2Id || d.label === connection.device2);
+        
+        if (device1 && device2) {
+            ctx.beginPath();
+            ctx.moveTo(device1.x, device1.y);
+            ctx.lineTo(device2.x, device2.y);
+            ctx.strokeStyle = "#00C3B5";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+    });
+    
+    // Draw devices
+    devices.forEach(device => {
+        ctx.beginPath();
+        ctx.arc(device.x, device.y, 25, 0, 2 * Math.PI);
+        ctx.fillStyle = getDeviceColor(device.type);
+        ctx.fill();
+        
+        // Draw device label
+        ctx.fillStyle = "#000";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(device.label || device.type, device.x, device.y + 5);
+    });
+}
+
+// Get color based on device type
+function getDeviceColor(type) {
+    const colors = {
+        'router': '#4CAF50',
+        'switch': '#2196F3',
+        'pc': '#FFC107',
+        'server': '#9C27B0'
+    };
+    
+    return colors[type.toLowerCase()] || '#FF5722';
+}
+
+// Delete confirmation modal
+function showDeleteConfirm(type, id) {
+    document.getElementById('delete-item-type').textContent = type;
+    
+    // Set up delete button
+    confirmDeleteBtn.onclick = () => {
+        deleteItem(type, id);
+        hideModal(deleteConfirmModal);
+    };
+    
+    // Show modal with animation
+    showModal(deleteConfirmModal);
+}
+
+// Delete item
+function deleteItem(type, id) {
+    if (type === 'topology') {
+        fetch(`/admin/topology/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            loadTopologies();
+            alert('Topology deleted successfully!');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the topology.');
+        });
+    } 
+    else if (type === 'troubleshooting') {
+        // For now, just simulate deletion for troubleshooting
+        console.log(`Deleting troubleshooting with ID: ${id}`);
+        loadTroubleshooting();
+        alert('Troubleshooting deleted successfully!');
+        
+        /* Uncomment when API is ready
+        fetch(`/admin/troubleshooting/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            loadTroubleshooting();
+            alert('Troubleshooting deleted successfully!');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the troubleshooting.');
+        });
+        */
+    }
+}
+</script>
+{% endblock %}
