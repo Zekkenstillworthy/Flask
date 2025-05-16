@@ -16,7 +16,7 @@ class ActivityLog(db.Model):
     related_entity_id = db.Column(db.Integer, nullable=True)
     
     # Relationship
-    user = db.relationship('User', backref=db.backref('activity_logs', lazy=True))
+    user = db.relationship('admin.models.user.AdminUser', backref=db.backref('activity_logs', lazy=True), foreign_keys=[user_id])
     
     @classmethod
     def log_activity(cls, user_id, action_type, message, related_entity_type=None, related_entity_id=None):

@@ -1,6 +1,7 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, request, flash, session
 import os
 from admin import db, login_manager
+from flask_login import current_user
 
 class AdminApp:
     def __init__(self):
@@ -22,6 +23,13 @@ class AdminApp:
         self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
         self.app.config['SECRET_KEY'] = 'your_secret_key'
         self.app.config['ADMIN_PORT'] = 5001
+        
+        # Configure session settings
+        self.app.config['SESSION_TYPE'] = 'filesystem'
+        self.app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours in seconds
+        self.app.config['SESSION_USE_SIGNER'] = True
+        self.app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+        self.app.config['SESSION_COOKIE_HTTPONLY'] = True
 
         # Debug template path
         template_dir = self.app.template_folder
@@ -78,6 +86,7 @@ class AdminApp:
         from admin.controllers.question_group_controller import question_group_bp
         from admin.controllers.class_controller import class_controller
         from admin.controllers.scenario_controller import scenario_bp
+        from admin.controllers.audit_log_controller import audit_log_bp
         from admin.routes.topology_routes import topology_bp
         
         # Register only available blueprints
@@ -90,6 +99,8 @@ class AdminApp:
         self.app.register_blueprint(question_group_bp)
         self.app.register_blueprint(class_controller)
         self.app.register_blueprint(scenario_bp)
+        self.app.register_blueprint(audit_log_bp)
+        # audit_log_bp registration removed (controller deleted)
         self.app.register_blueprint(topology_bp, url_prefix='/admin/topology')
         
         # Add root route to redirect to admin dashboard
@@ -97,9 +108,33 @@ class AdminApp:
         def index():
             return redirect(url_for('dashboard.index'))
 
+    def setup_admin_protection(self):
+        """Set up admin route protection"""
+        # Implement app-level protection for all admin routes
+        @self.app.before_request
+        def check_admin_auth():
+            # List of paths that don't require authentication
+            exempt_routes = [
+                '/static/', 
+                '/login',
+                '/auth/login',
+                '/logout',
+                '/auth/logout'
+            ]
+            
+            # Skip check for exempt routes
+            if any(request.path.startswith(route) for route in exempt_routes):
+                return None
+            
+            # Check if user is authenticated
+            if not current_user.is_authenticated:
+                flash('Please log in to access the admin area', 'warning')
+                return redirect(url_for('auth.login', next=request.url))
+
     def setup(self):
         """Setup the application by registering blueprints and initializing database."""
         self.register_blueprints()
+        self.setup_admin_protection()  # Add admin route protection
         
         with self.app.app_context():
             # Use absolute import for database_setup
@@ -108,8 +143,15 @@ class AdminApp:
         
         return self.app
 
-    def run(self):
+    def run(self, host=None, port=None, debug=True):
         """Run the Flask application."""
-        port = self.app.config['ADMIN_PORT']
+        if port is None:
+            port = self.app.config['ADMIN_PORT']
+        
         print(f"Admin app running on port {port}")
-        self.app.run(debug=True, port=port)
+        print("Admin authentication protection enabled - all routes require login")
+        
+        if host:
+            self.app.run(debug=debug, port=port, host=host)
+        else:
+            self.app.run(debug=debug, port=port)

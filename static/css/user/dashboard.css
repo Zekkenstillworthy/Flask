@@ -113,23 +113,25 @@ nav a.active {
 }
 
 .popup-info {
-  position: absolute;
+  position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
+  transform: translate(-50%, -50%) scale(0.8);
   width: 500px;
   background: #00C3B5;
   border-radius: 6px;
   padding: 10px 25px;
   opacity: 0;
   pointer-events: none;
-  transition: 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform, opacity;
+  z-index: 1000;
 }
 
 .popup-info.active {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-50%, -50%) scale(0.9);
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .popup-info h2 {

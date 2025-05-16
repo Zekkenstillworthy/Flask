@@ -9,9 +9,9 @@ import sqlite3
 def setup_database():
     """Set up the database with initial tables and data."""
     from admin import db
-    from admin.models.user import User, Admin
+    from admin.models.user import AdminUser, Admin
     from admin.models.question import Question
-    from admin.models.score import Score
+    from admin.models.score import AdminScore  # Updated to use the renamed model
     from admin.models.class_model import Class
     from admin.models.question_group import QuestionGroup
     from admin.models.essay_response import EssayResponse

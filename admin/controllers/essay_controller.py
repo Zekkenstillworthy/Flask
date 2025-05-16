@@ -1,14 +1,16 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from admin.models.essay_response import EssayResponse
-from admin.models.user import User
+from admin.models.user import AdminUser
 from admin.models.activity_log import ActivityLog
 from admin import db
 from sqlalchemy import func
 from datetime import datetime
+from flask_login import login_required, current_user
 
 essay_bp = Blueprint('essay', __name__, url_prefix='/admin/essays')
 
 @essay_bp.route('/')
+@login_required
 def index():
     """Display all essay responses with filters"""
     # Get filter parameters
@@ -46,6 +48,7 @@ def index():
                            })
 
 @essay_bp.route('/users')
+@login_required
 def users():
     """Display users with their essay responses"""
     # Get pagination parameters
@@ -102,6 +105,7 @@ def users():
                           active_page='users')
 
 @essay_bp.route('/<int:essay_id>')
+@login_required
 def view(essay_id):
     """View a single essay response with review options"""
     essay = EssayResponse.query.get_or_404(essay_id)
@@ -113,6 +117,7 @@ def view(essay_id):
                            active_page='essays')
 
 @essay_bp.route('/<int:essay_id>/review', methods=['POST'])
+@login_required
 def review(essay_id):
     """Review an essay response"""
     essay = EssayResponse.query.get_or_404(essay_id)
@@ -147,6 +152,7 @@ def review(essay_id):
     return redirect(url_for('essay.index'))
 
 @essay_bp.route('/<int:essay_id>/delete', methods=['POST'])
+@login_required
 def delete(essay_id):
     """Delete an essay response"""
     essay = EssayResponse.query.get_or_404(essay_id)
@@ -170,6 +176,7 @@ def delete(essay_id):
 # API Endpoints for AJAX functionality
 
 @essay_bp.route('/api/users/<int:user_id>/essays')
+@login_required
 def get_user_essays(user_id):
     """API endpoint to get all essays for a specific user"""
     user = User.query.get_or_404(user_id)
@@ -195,6 +202,7 @@ def get_user_essays(user_id):
     })
 
 @essay_bp.route('/api/essays/<int:essay_id>/grade', methods=['POST'])
+@login_required
 def api_grade_essay(essay_id):
     """API endpoint to grade an essay"""
     essay = EssayResponse.query.get_or_404(essay_id)

@@ -1,12 +1,13 @@
 from datetime import datetime
 import json
-from admin import db
+from __init__ import db
 
 class Topology(db.Model):
     """
     Model for network topology challenges
     """
     __tablename__ = 'topologies'
+    __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)

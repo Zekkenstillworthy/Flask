@@ -1,12 +1,8 @@
-<!-- filepath: c:\Users\gilbe\Documents\Flask\templates\admin\user_management.html -->
 {% extends "admin/base.html" %}
 
 {% block head %}
     <title>User Management | RiddleNet Admin</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}">
-    <!-- Add QR Code library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
         
@@ -675,7 +671,6 @@
                         
                         <div class="action-buttons">
                             <button class="btn btn-primary" id="addUserBtn"><i class='bx bx-plus'></i> Add User</button>
-                            <button class="btn btn-warning" id="bulkActionsBtn"><i class='bx bx-list-ul'></i> Bulk Actions</button>
                         </div>
                     </div>
                     
@@ -1012,28 +1007,7 @@
             </div>
         </div>
         
-        <!-- Bulk Actions Modal -->
-        <div id="bulkActionsModal" class="modal">
-            <div class="modal-content">
-                <span class="close-modal" id="closeBulkActions">&times;</span>
-                <h3>Bulk Actions</h3>
-                <p><span id="selectedCount">0</span> users selected</p>
-                <div class="form-group">
-                    <label for="bulkAction">Action:</label>
-                    <select id="bulkAction" name="bulkAction">
-                        <option value="">Select an action...</option>
-                        <option value="activate">Set as Active</option>
-                        <option value="deactivate">Set as Inactive</option>
-                        <option value="ban">Ban Users</option>
-                        <option value="delete">Delete Users</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-danger" id="cancelBulkAction">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="applyBulkAction">Apply</button>
-                </div>
-            </div>
-        </div>
+        
         
         <!-- Edit Admin Modal -->
         <div id="editAdminModal" class="modal">
@@ -1096,7 +1070,6 @@
                 edit: document.getElementById('editUserModal'),
                 view: document.getElementById('viewUserModal'),
                 delete: document.getElementById('deleteUserModal'),
-                bulk: document.getElementById('bulkActionsModal')
             };
             
             // Open modals
@@ -1104,15 +1077,6 @@
                 modals.add.style.display = 'flex';
             });
             
-            document.getElementById('bulkActionsBtn').addEventListener('click', () => {
-                const selectedUsers = document.querySelectorAll('.user-select:checked');
-                document.getElementById('selectedCount').textContent = selectedUsers.length;
-                if (selectedUsers.length > 0) {
-                    modals.bulk.style.display = 'flex';
-                } else {
-                    alert('Please select at least one user.');
-                }
-            });
             
             // Close modals
             document.getElementById('closeAddUser').addEventListener('click', () => {
@@ -1147,13 +1111,6 @@
                 modals.delete.style.display = 'none';
             });
             
-            document.getElementById('closeBulkActions').addEventListener('click', () => {
-                modals.bulk.style.display = 'none';
-            });
-            
-            document.getElementById('cancelBulkAction').addEventListener('click', () => {
-                modals.bulk.style.display = 'none';
-            });
             
             // Tab functionality in the view user modal
             const tabs = document.querySelectorAll('.detail-tab');
@@ -1641,22 +1598,7 @@
                 
                 modals.delete.style.display = 'none';
             });
-            
-            document.getElementById('applyBulkAction').addEventListener('click', function() {
-                const action = document.getElementById('bulkAction').value;
-                const selectedUsers = document.querySelectorAll('.user-select:checked');
-                const userIds = Array.from(selectedUsers).map(checkbox => checkbox.dataset.id);
-                
-                if (!action) {
-                    alert('Please select an action to perform.');
-                    return;
-                }
-                
-                // In a real application, this would send data to the server
-                alert(`Action "${action}" would be applied to ${userIds.length} users`);
-                modals.bulk.style.display = 'none';
-            });
-            
+         
             // "Edit this user" button in view modal
             document.querySelector('.edit-this-user').addEventListener('click', function() {
                 const userId = document.getElementById('userId').textContent;

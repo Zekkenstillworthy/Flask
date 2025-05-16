@@ -1,87 +1,15 @@
-from .models import db, Question
+from functools import wraps
+from flask import session, redirect, url_for, flash, request
+from flask_login import current_user
 
-class DataUtility:
-    @staticmethod
-    def import_default_questions():
-        """Import default questions if the database is empty"""
-        if Question.query.count() == 0:
-            try:
-                default_questions = [
-                    {
-                        "numb": 1,
-                        "question": "What is an Autonomous System (AS)?",
-                        "answer": "b. A collection of networks under one administration",
-                        "options": [
-                            "a. A group of devices sharing a MAC address",
-                            "b. A collection of networks under one administration",
-                            "c. A backup route in OSPF",
-                            "d. A network type for stub areas"
-                        ],
-                        "explanation": ""
-                    },
-                    {
-                        "numb": 2,
-                        "question": "What does RIP stand for?",
-                        "answer": "b. Routing Information Protocol",
-                        "options": [
-                            "a. Routing Internet Protocol",
-                            "b. Routing Information Protocol",
-                            "c. Remote Information Path",
-                            "d. Router Internal Path"
-                        ],
-                        "explanation": ""
-                    },
-                    {
-                        "numb": 3,
-                        "question": "What metric does RIP use to determine the best route?",
-                        "answer": "c. Hop Count",
-                        "options": [
-                            "a. Bandwidth",
-                            "b. Latency",
-                            "c. Hop Count",
-                            "d. Cost"
-                        ],
-                        "explanation": ""
-                    },
-                    {
-                        "numb": 4,
-                        "question": "What is the maximum hop count RIP can handle?",
-                        "answer": "b. 15",
-                        "options": [
-                            "a. 10",
-                            "b. 15",
-                            "c. 20",
-                            "d. 25"
-                        ],
-                        "explanation": ""
-                    },
-                    {
-                        "numb": 5,
-                        "question": "Which command configures OSPF on an interface?",
-                        "answer": "b. ip ospf 1 area 0",
-                        "options": [
-                            "a. ip ospf network",
-                            "b. ip ospf 1 area 0",
-                            "c. configure ospf area 0",
-                            "d. network ospf-enable"
-                        ],
-                        "explanation": ""
-                    }
-                ]
-                
-                for q_data in default_questions:
-                    question = Question(
-                        numb=q_data["numb"],
-                        question=q_data["question"],
-                        answer=q_data["answer"],
-                        options=q_data["options"],
-                        explanation=q_data.get("explanation", ""),
-                        category="riddle"
-                    )
-                    db.session.add(question)
-                    
-                db.session.commit()
-                print("Imported default questions successfully")
-            except Exception as e:
-                db.session.rollback()
-                print(f"Error importing default questions: {e}")
+def user_login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check both Flask-Login and session
+        if not current_user.is_authenticated or 'user_id' not in session:
+            # Save the requested URL for redirecting after login
+            next_url = request.url
+            flash('You need to log in first!', 'error')
+            return redirect(url_for('user.login', next=next_url))
+        return f(*args, **kwargs)
+    return decorated_function

@@ -3,308 +3,18 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Class Management</title>
-<link
-  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-  rel="stylesheet"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-/>
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"/>
 <link rel="icon" href="{{ url_for('static', filename='img/Logo.png') }}" />
-<style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
-  }
-  body {
-    background: url("{{ url_for('static', filename='img/Bg.jpg') }}") no-repeat
-      center center fixed;
-    background-size: cover;
-    color: #fff;
-    display: flex;
-    min-height: 100vh;
-  }
-
-  .main-content {
-    margin-left: 260px;
-    padding: 20px;
-    flex-grow: 1;
-    width: 100%;
-  }
-
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-
-  .search-container {
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    margin-bottom: 20px;
-    padding: 10px;
-  }
-
-  .search-box {
-    width: 100%;
-    background-color: rgba(0, 0, 0, 0.2);
-    border: none;
-    border-radius: 6px;
-    color: white;
-    padding: 12px 20px;
-    font-size: 16px;
-  }
-
-  .search-box:focus {
-    outline: none;
-    background-color: rgba(0, 0, 0, 0.3);
-  }
-
-  .search-btn {
-    background-color: #00c3b5;
-    border: none;
-    color: white;
-    border-radius: 6px;
-    padding: 12px 24px;
-    font-weight: 500;
-  }
-
-  .search-btn:hover {
-    background-color: #00a39a;
-  }
-
-  .filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .filter-btn {
-    background-color: #00c3b5;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 20px;
-  }
-
-  .filter-btn.active {
-    background-color: white;
-    color: #00c3b5;
-  }
-
-  .filter-select {
-    background-color: rgba(0, 0, 0, 0.3);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin-right: 10px;
-  }
-
-  .filter-select option {
-    background-color: #1a2b2b;
-    color: white;
-  }
-
-  .action-btn {
-    background-color: #00c3b5;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 15px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .action-btn i {
-    font-size: 18px;
-  }
-
-  .bulk-action-btn {
-    background-color: #f39c12;
-  }
-
-  .data-table {
-    width: 100%;
-    max-width: 1230px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: rgba(0, 0, 0, 0.6);
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
-  }
-
-  .data-table thead th {
-    background-color: #00c3b5;
-    color: white;
-    padding: 15px;
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-    text-align: center;
-  }
-
-  .data-table tbody td {
-    padding: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 15px;
-  }
-
-  .data-table tbody tr:hover {
-    background-color: rgba(0, 195, 181, 0.1);
-  }
-
-  .profile-img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  .status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-block;
-  }
-
-  .status-active {
-    background-color: rgba(46, 204, 113, 0.2);
-    color: #2ecc71;
-  }
-
-  .status-inactive {
-    background-color: rgba(231, 76, 60, 0.2);
-    color: #e74c3c;
-  }
-
-  .status-pending {
-    background-color: rgba(241, 196, 15, 0.2);
-    color: #f1c40f;
-  }
-
-  .action-link {
-    color: #00c3b5;
-    text-decoration: none;
-    margin-right: 15px;
-    font-weight: 500;
-  }
-
-  .edit-link {
-    color: #3498db;
-  }
-
-  .delete-link {
-    color: #e74c3c;
-  }
-
-  .pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
-
-  .pagination a,
-  .pagination span {
-    display: inline-block;
-    padding: 8px 16px;
-    margin: 0 4px;
-    background-color: rgba(0, 0, 0, 0.3);
-    color: white;
-    border-radius: 6px;
-    text-decoration: none;
-  }
-
-  .pagination .current {
-    background-color: #00c3b5;
-  }
-
-  .modal-content {
-    background-color: #1a2b2b;
-    color: white;
-    border-radius: 10px;
-  }
-
-  .modal-header {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .modal-footer {
-    border-top-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .form-control,
-  .form-select {
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
-  }
-
-  .form-control:focus,
-  .form-select:focus {
-    background-color: rgba(0, 0, 0, 0.3);
-    color: white;
-    border-color: #00c3b5;
-    box-shadow: 0 0 0 0.25rem rgba(0, 195, 181, 0.25);
-  }
-
-  .form-control::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .nav-tabs .nav-link {
-    color: rgba(255, 255, 255, 0.7);
-    border: none;
-  }
-
-  .nav-tabs .nav-link:hover {
-    border: none;
-    color: white;
-  }
-
-  .nav-tabs .nav-link.active {
-    background-color: transparent;
-    border-bottom: 2px solid #00c3b5;
-    color: white;
-  }
-
-  .code-display {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-    border: 1px dashed rgba(255, 255, 255, 0.2);
-    color: #00c3b5;
-  }
-
-  #classCodeGen {
-    letter-spacing: 2px;
-    font-family: monospace;
-    font-weight: bold;
-  }
-
-  /* Add this to add spacing between columns */
-  .data-table th,
-  .data-table td {
-    padding: 15px 10px;
-  }
-</style>
-{% endblock %} {% block body %} {{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/class.css') }}" />
+{% endblock %} 
+{% block body %} 
+{{ super() }}
 <div class="main-content">
   <div class="page-header">
     <h2>Class Management</h2>
     <div>
-      <span>Welcome, Admin</span>
+      <span>Welcome, {{ current_user.username }}</span>
     </div>
   </div>
 
@@ -332,10 +42,10 @@
 
     <div class="ms-auto d-flex">
       <select class="filter-select me-3">
-        <option>Sort By: Name</option>
-        <option>Sort By: Date (Newest)</option>
-        <option>Sort By: Date (Oldest)</option>
-        <option>Sort By: Students</option>
+        <option>Name</option>
+        <option>Date (Newest)</option>
+        <option>Date (Oldest)</option>
+        <option>Students</option>
       </select>
 
       <button
@@ -347,9 +57,7 @@
         <i class="bx bx-plus"></i> Add Class
       </button>
 
-      <button class="action-btn bulk-action-btn ms-2">
-        <i class="bx bx-cog"></i> Bulk Actions
-      </button>
+      
     </div>
   </div>
 
@@ -357,9 +65,6 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th width="30px">
-            <input type="checkbox" class="form-check-input" id="selectAll" />
-          </th>
           <th>CLASS NAME</th>
           <th>CODE</th>
           <th>STUDENTS</th>
@@ -650,7 +355,17 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
+    // Helper function to safely add event listeners to elements
+    function addSafeEventListener(elementId, eventType, handler) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.addEventListener(eventType, handler);
+      } else {
+        console.log(`Element with ID "${elementId}" not found in DOM.`);
+      }
+    }
+
     // Fix for modal accessibility issues
     const fixModalAccessibility = () => {
       // Configure Bootstrap modals to properly handle focus
@@ -696,12 +411,18 @@
           return response.json();
         })
         .then(data => {
-          document.getElementById("classCodeGen").value = data.code;
+          const classCodeEl = document.getElementById("classCodeGen");
+          if (classCodeEl) {
+            classCodeEl.value = data.code;
+          }
         })
         .catch(error => {
           console.error("Error generating class code:", error);
           // Fallback to local generation if API fails
-          document.getElementById("classCodeGen").value = generateLocalClassCode();
+          const classCodeEl = document.getElementById("classCodeGen");
+          if (classCodeEl) {
+            classCodeEl.value = generateLocalClassCode();
+          }
         });
     }
     
@@ -717,21 +438,23 @@
 
     // Set current date as default for start date
     const today = new Date().toISOString().split("T")[0];
-    document.getElementById("classStart").value = today;
+    const classStartEl = document.getElementById("classStart");
+    if (classStartEl) {
+      classStartEl.value = today;
+    }
 
     // Set default end date as 3 months from now
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 3);
-    document.getElementById("classEnd").value = endDate
-      .toISOString()
-      .split("T")[0];
+    const classEndEl = document.getElementById("classEnd");
+    if (classEndEl) {
+      classEndEl.value = endDate.toISOString().split("T")[0];
+    }
 
     // Generate code button
-    document
-      .getElementById("generateCodeBtn")
-      .addEventListener("click", function () {
-        generateCodeFromAPI();
-      });
+    addSafeEventListener("generateCodeBtn", "click", function () {
+      generateCodeFromAPI();
+    });
 
     // Initialize with a random code
     generateCodeFromAPI();
@@ -743,42 +466,36 @@
     loadClasses();
 
     // Create class form submission
-    document
-      .getElementById("createClassBtn")
-      .addEventListener("click", function () {
-        // Get the form element
-        const form = document.getElementById("createClassForm");
+    addSafeEventListener("createClassBtn", "click", function () {
+      // Get the form element
+      const form = document.getElementById("createClassForm");
 
-        // Check if the form is valid
-        if (form.checkValidity()) {
-          createClass();
-        } else {
-          // Trigger form validation
-          form.reportValidity();
-        }
-      });
+      // Check if the form is valid
+      if (form && form.checkValidity()) {
+        createClass();
+      } else if (form) {
+        // Trigger form validation
+        form.reportValidity();
+      } else {
+        console.log("Form element 'createClassForm' not found");
+      }
+    });
 
     // Filter buttons
-    document
-      .getElementById("allClassesBtn")
-      .addEventListener("click", function () {
-        setActiveFilterButton(this);
-        filterClasses("all");
-      });
+    addSafeEventListener("allClassesBtn", "click", function () {
+      setActiveFilterButton(this);
+      filterClasses("all");
+    });
 
-    document
-      .getElementById("activeClassesBtn")
-      .addEventListener("click", function () {
-        setActiveFilterButton(this);
-        filterClasses("active");
-      });
+    addSafeEventListener("activeClassesBtn", "click", function () {
+      setActiveFilterButton(this);
+      filterClasses("active");
+    });
 
-    document
-      .getElementById("inactiveClassesBtn")
-      .addEventListener("click", function () {
-        setActiveFilterButton(this);
-        filterClasses("inactive");
-      });
+    addSafeEventListener("inactiveClassesBtn", "click", function () {
+      setActiveFilterButton(this);
+      filterClasses("inactive");
+    });
 
     function setActiveFilterButton(button) {
       // Remove active class from all filter buttons
@@ -795,14 +512,12 @@
     }
 
     // Select all checkbox
-    document
-      .getElementById("selectAll")
-      .addEventListener("change", function () {
-        const isChecked = this.checked;
-        document.querySelectorAll(".class-checkbox").forEach((checkbox) => {
-          checkbox.checked = isChecked;
-        });
+    addSafeEventListener("selectAll", "change", function () {
+      const isChecked = this.checked;
+      document.querySelectorAll(".class-checkbox").forEach((checkbox) => {
+        checkbox.checked = isChecked;
       });
+    });
 
     // Function to load question groups from API
     function loadQuestionGroups() {
@@ -816,12 +531,15 @@
         })
         .then((groups) => {
           // Hide loading spinner
-          document
-            .getElementById("questionGroupsLoading")
-            .classList.add("d-none");
+          const loadingEl = document.getElementById("questionGroupsLoading");
+          if (loadingEl) {
+            loadingEl.classList.add("d-none");
+          }
 
           const container = document.getElementById("questionGroupsList");
-          container.classList.remove("d-none");
+          if (container) {
+            container.classList.remove("d-none");
+          }
 
           if (groups.length === 0) {
             container.innerHTML =
@@ -855,14 +573,16 @@
         })
         .catch((error) => {
           console.error("Error loading question groups:", error);
-          document
-            .getElementById("questionGroupsLoading")
-            .classList.add("d-none");
-          document
-            .getElementById("questionGroupsList")
-            .classList.remove("d-none");
-          document.getElementById("questionGroupsList").innerHTML =
-            '<div class="alert alert-danger">Failed to load question groups. Please try refreshing the page.</div>';
+          const loadingEl = document.getElementById("questionGroupsLoading");
+          if (loadingEl) {
+            loadingEl.classList.add("d-none");
+          }
+          
+          const groupListEl = document.getElementById("questionGroupsList");
+          if (groupListEl) {
+            groupListEl.classList.remove("d-none");
+            groupListEl.innerHTML = '<div class="alert alert-danger">Failed to load question groups. Please try refreshing the page.</div>';
+          }
         });
     }
 
@@ -922,11 +642,7 @@
       classes.forEach((cls) => {
         html += `
             <tr>
-                <td>
-                    <input type="checkbox" class="form-check-input class-checkbox" data-id="${
-                      cls.id
-                    }">
-                </td>
+                
                 <td>${cls.name} ${
           cls.section
             ? `<small class="text-muted">(${cls.section})</small>`
@@ -1063,15 +779,22 @@
           alert(data.message || "Class created successfully!");
 
           // Hide the modal
-          const modal = bootstrap.Modal.getInstance(
-            document.getElementById("createClassModal")
-          );
-          modal.hide();
+          const modalEl = document.getElementById("createClassModal");
+          if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+          }
 
           // Reset form and reload classes
-          document.getElementById("createClassForm").reset();
-          document.getElementById("classStart").value = today;
-          document.getElementById("classEnd").value = endDate.toISOString().split("T")[0];
+          const formEl = document.getElementById("createClassForm");
+          if (formEl) formEl.reset();
+          
+          const classStartEl = document.getElementById("classStart");
+          if (classStartEl) classStartEl.value = today;
+          
+          const classEndEl = document.getElementById("classEnd");
+          if (classEndEl) classEndEl.value = endDate.toISOString().split("T")[0];
+          
           generateCodeFromAPI();
           loadClasses();
         })
@@ -1108,17 +831,20 @@
         })
         .then(classData => {
           // Update modal title with class name
-          document.getElementById("classModalTitle").textContent = 
-            `Class Details: ${classData.name}`;
+          const modalTitleEl = document.getElementById("classModalTitle");
+          if (modalTitleEl) {
+            modalTitleEl.textContent = `Class Details: ${classData.name}`;
+          }
             
           // Populate the modal tabs with class data
           populateClassDetailsModal(classData);
           
           // Show the modal
-          const modal = new bootstrap.Modal(
-            document.getElementById("classDetailsModal")
-          );
-          modal.show();
+          const modalEl = document.getElementById("classDetailsModal");
+          if (modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+          }
         })
         .catch(error => {
           console.error("Error fetching class details:", error);
@@ -1128,27 +854,29 @@
     
     function populateClassDetailsModal(classData) {
       // Here you would populate the different tabs with class data
-      // For now, we'll just add a placeholder in the info tab
-      document.getElementById("info-tab-pane").innerHTML = `
-        <div class="row">
-          <div class="col-md-6">
-            <p><strong>Class Name:</strong> ${classData.name}</p>
-            <p><strong>Section:</strong> ${classData.section || 'N/A'}</p>
-            <p><strong>Class Code:</strong> <span class="code-display">${classData.code}</span></p>
-            <p><strong>Status:</strong> <span class="status-badge ${getStatusClass(classData.status)}">${capitalizeFirstLetter(classData.status)}</span></p>
+      const infoTabEl = document.getElementById("info-tab-pane");
+      if (infoTabEl) {
+        infoTabEl.innerHTML = `
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Class Name:</strong> ${classData.name}</p>
+              <p><strong>Section:</strong> ${classData.section || 'N/A'}</p>
+              <p><strong>Class Code:</strong> <span class="code-display">${classData.code}</span></p>
+              <p><strong>Status:</strong> <span class="status-badge ${getStatusClass(classData.status)}">${capitalizeFirstLetter(classData.status)}</span></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Start Date:</strong> ${formatDate(classData.startDate)}</p>
+              <p><strong>End Date:</strong> ${formatDate(classData.endDate)}</p>
+              <p><strong>Students:</strong> ${classData.studentCount || 0}/${classData.maxStudents}</p>
+              <p><strong>Question Groups:</strong> ${classData.questionGroups ? classData.questionGroups.length : 0} assigned</p>
+            </div>
+            <div class="col-12 mt-3">
+              <h5>Description</h5>
+              <p>${classData.description || 'No description provided.'}</p>
+            </div>
           </div>
-          <div class="col-md-6">
-            <p><strong>Start Date:</strong> ${formatDate(classData.startDate)}</p>
-            <p><strong>End Date:</strong> ${formatDate(classData.endDate)}</p>
-            <p><strong>Students:</strong> ${classData.studentCount || 0}/${classData.maxStudents}</p>
-            <p><strong>Question Groups:</strong> ${classData.questionGroups ? classData.questionGroups.length : 0} assigned</p>
-          </div>
-          <div class="col-12 mt-3">
-            <h5>Description</h5>
-            <p>${classData.description || 'No description provided.'}</p>
-          </div>
-        </div>
-      `;
+        `;
+      }
     }
     
     // Edit class function
@@ -1162,14 +890,20 @@
           return response.json();
         })
         .then(classData => {
+          // Safely set form values with null checks
+          const setElementValue = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.value = value;
+          };
+          
           // Open the create class modal but populate with existing data
-          document.getElementById("className").value = classData.name;
-          document.getElementById("classSection").value = classData.section || '';
-          document.getElementById("classStart").value = classData.startDate?.substring(0, 10);
-          document.getElementById("classEnd").value = classData.endDate?.substring(0, 10);
-          document.getElementById("maxStudents").value = classData.maxStudents;
-          document.getElementById("classCodeGen").value = classData.code;
-          document.getElementById("classDescription").value = classData.description || '';
+          setElementValue("className", classData.name);
+          setElementValue("classSection", classData.section || '');
+          setElementValue("classStart", classData.startDate?.substring(0, 10));
+          setElementValue("classEnd", classData.endDate?.substring(0, 10));
+          setElementValue("maxStudents", classData.maxStudents);
+          setElementValue("classCodeGen", classData.code);
+          setElementValue("classDescription", classData.description || '');
           
           // Check the appropriate question groups
           if (classData.questionGroups) {
@@ -1183,19 +917,25 @@
           
           // Change the create button to update
           const createBtn = document.getElementById("createClassBtn");
-          createBtn.textContent = "Update Class";
-          createBtn.onclick = function() {
-            updateClass(classId);
-          };
+          if (createBtn) {
+            createBtn.textContent = "Update Class";
+            createBtn.onclick = function() {
+              updateClass(classId);
+            };
+          }
           
           // Disable code generation for existing classes
-          document.getElementById("generateCodeBtn").disabled = true;
+          const generateCodeBtn = document.getElementById("generateCodeBtn");
+          if (generateCodeBtn) {
+            generateCodeBtn.disabled = true;
+          }
           
           // Show the modal
-          const modal = new bootstrap.Modal(
-            document.getElementById("createClassModal")
-          );
-          modal.show();
+          const modalEl = document.getElementById("createClassModal");
+          if (modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+          }
         })
         .catch(error => {
           console.error("Error fetching class for edit:", error);
@@ -1256,24 +996,35 @@
           alert(data.message || "Class updated successfully!");
           
           // Hide the modal
-          const modal = bootstrap.Modal.getInstance(
-            document.getElementById("createClassModal")
-          );
-          modal.hide();
+          const modalEl = document.getElementById("createClassModal");
+          if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+          }
           
           // Reset the form and button
-          document.getElementById("createClassForm").reset();
-          document.getElementById("createClassBtn").textContent = "Create Class";
-          document.getElementById("createClassBtn").onclick = createClass;
-          document.getElementById("generateCodeBtn").disabled = false;
+          const formEl = document.getElementById("createClassForm");
+          if (formEl) formEl.reset();
+          
+          const createBtnEl = document.getElementById("createClassBtn");
+          if (createBtnEl) {
+            createBtnEl.textContent = "Create Class";
+            createBtnEl.onclick = createClass;
+          }
+          
+          const generateCodeBtnEl = document.getElementById("generateCodeBtn");
+          if (generateCodeBtnEl) generateCodeBtnEl.disabled = false;
           
           // Set default dates
           const currentDate = new Date().toISOString().split("T")[0];
           const futureDate = new Date();
           futureDate.setMonth(futureDate.getMonth() + 3);
           
-          document.getElementById("classStart").value = currentDate;
-          document.getElementById("classEnd").value = futureDate.toISOString().split("T")[0];
+          const classStartEl = document.getElementById("classStart");
+          if (classStartEl) classStartEl.value = currentDate;
+          
+          const classEndEl = document.getElementById("classEnd");
+          if (classEndEl) classEndEl.value = futureDate.toISOString().split("T")[0];
           
           generateCodeFromAPI();
           
@@ -1339,5 +1090,6 @@
       return string.charAt(0).toUpperCase() + string.slice(1);
     }
   });
+
 </script>
 {% endblock %}

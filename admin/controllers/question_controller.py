@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 import json
+from flask_login import login_required, current_user
 from ..app import db
 from ..models.question import Question
 from ..models.question_group import QuestionGroup
@@ -9,11 +10,20 @@ question_bp = Blueprint('question', __name__, url_prefix='/questions')
 class QuestionController:
     @staticmethod
     @question_bp.route('/')
+    @login_required
     def index():
         # Show question groups first instead of all questions
         groups = QuestionGroup.query.order_by(QuestionGroup.name).all()
         
-        # Also get ungrouped questions
+        return render_template(
+            'admin/questions.html',
+            groups=groups,
+            active_page='questions'
+        )
+    @staticmethod
+    @question_bp.route('/ungrouped', methods=['GET'])
+    @login_required
+    def get_ungrouped_questions():
         grouped_question_ids = []
         for group in groups:
             for question in group.questions:
@@ -39,6 +49,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/add', methods=['GET', 'POST'])
+    @login_required
     def add_question():
         if request.method == 'POST':
             numb = int(request.form.get('numb', 1))
@@ -161,6 +172,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/edit/<int:question_id>', methods=['GET', 'POST'])
+    @login_required
     def edit_question(question_id):
         question = Question.query.get_or_404(question_id)
         
@@ -316,6 +328,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/delete/<int:question_id>', methods=['POST'])
+    @login_required
     def delete_question(question_id):
         question = Question.query.get_or_404(question_id)
         
@@ -331,6 +344,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/api/questions')
+    @login_required
     def get_questions_api():
         category = request.args.get('category', 'riddle')
         questions = Question.query.filter_by(category=category).order_by(Question.numb).all()
@@ -349,6 +363,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/create_sample_blank_question')
+    @login_required
     def create_sample_blank_question():
         """Create a sample fill-in-the-blank question for testing."""
         try:
@@ -394,6 +409,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/group_questions', methods=['POST'])
+    @login_required
     def group_questions():
         """Add selected questions to a group from the questions page"""
         if request.method == 'POST':
@@ -425,7 +441,8 @@ class QuestionController:
         return redirect(url_for('question.index'))
         
     @staticmethod
-    @question_bp.route('/ungrouped', methods=['GET'])
+    @question_bp.route('/list_ungrouped', methods=['GET'])
+    @login_required
     def list_ungrouped():
         """Display ungrouped questions with options to add them to groups"""
         # Get all question groups for selection
@@ -456,6 +473,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/get_groups', methods=['GET'])
+    @login_required
     def get_groups():
         """API endpoint to get all question groups for the grouping modal"""
         try:
@@ -467,6 +485,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/api/group_questions', methods=['POST'])
+    @login_required
     def group_questions_api():
         """Handle grouping questions from the modal dialog"""
         try:
@@ -540,6 +559,7 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/get/<int:question_id>', methods=['GET'])
+    @login_required
     def get_question(question_id):
         """API endpoint to get question data for editing in the modal"""
         try:
@@ -589,7 +609,8 @@ class QuestionController:
 
     @staticmethod
     @question_bp.route('/api/ungrouped', methods=['GET'])
-    def get_ungrouped_questions():
+    @login_required
+    def get_ungrouped_questions_api():
         """API endpoint to get ungrouped questions for the group modal"""
         try:
             category = request.args.get('category', 'all')
@@ -638,3 +659,30 @@ class QuestionController:
             return jsonify({'success': True, 'questions': questions_data})
         except Exception as e:
             return jsonify({'success': False, 'message': str(e)}), 500
+
+    def get_questions_by_category(self, category):
+        """Get questions by category"""
+        try:
+            questions = Question.query.filter_by(category=category).order_by(Question.numb).all()
+            return questions
+        except Exception as e:
+            print(f"Error fetching questions by category: {str(e)}")
+            return []
+    
+    def get_all_questions(self):
+        """Get all questions"""
+        try:
+            questions = Question.query.order_by(Question.numb).all()
+            return questions
+        except Exception as e:
+            print(f"Error fetching all questions: {str(e)}")
+            return []
+            
+    def get_question_by_id(self, question_id):
+        """Get a question by ID"""
+        try:
+            question = Question.query.get(question_id)
+            return question
+        except Exception as e:
+            print(f"Error fetching question by ID: {str(e)}")
+            return None

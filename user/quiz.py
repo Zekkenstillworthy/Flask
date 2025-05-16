@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, session, jsonify
-from .models import db, Score, Question, EssayResponse
+from user.models import Score, Question, EssayResponse, User  # Direct imports from user.models
+from __init__ import db  # Import db from main app
 
 class QuizController:
     def __init__(self, app):
@@ -14,16 +15,22 @@ class QuizController:
         self.app.route('/save_topology_score', methods=['POST'])(self.save_topology_score)
         self.app.route('/save_crimping_score', methods=['POST'])(self.save_crimping_score)
         self.app.route('/save_troubleshoot_score', methods=['POST'])(self.save_troubleshoot_score)
+        
+        # Make sure we register both the direct and API routes for essay submission
         self.app.route('/save_essay', methods=['POST'])(self.save_essay)
+        
+        # Note: We're not registering the API version here since it should come from the API blueprint
+        # This avoids conflicts with the blueprint registration
+        
         self.app.route('/delete_score/<int:score_id>', methods=['POST'])(self.delete_score)
         
-        # Quiz data routes
-        self.app.route('/api/questions')(self.get_questions)
+        # Quiz data routes - register both with and without API prefix for fallback
+        self.app.route('/questions')(self.get_questions)
         
         # Quiz view routes
-        self.app.route('/topology')(self.topology)
-        self.app.route('/troubleshoot')(self.troubleshoot)
-        self.app.route('/crimp')(self.crimp)
+        self.app.route('/topology', methods=['GET', 'POST'])(self.topology)
+        self.app.route('/troubleshoot', methods=['GET', 'POST'])(self.troubleshoot)
+        self.app.route('/crimp', methods=['GET', 'POST'])(self.crimp)
 
     def submit_quiz(self):
         if 'user_id' not in session:
@@ -136,21 +143,44 @@ class QuizController:
             db.session.add(new_response)
             db.session.commit()
             
+            print(f"Essay saved successfully for user {session['user_id']}, category: {category}")
             return jsonify({"status": "success", "message": "Essay submitted for review"}), 200
         except Exception as e:
+            db.session.rollback()
+            import traceback
+            print(f"Error saving essay: {str(e)}")
+            traceback.print_exc()
+            return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
             return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
 
     def delete_score(self, score_id):
-        score = Score.query.get(score_id)
+        # Import locally to avoid circular imports
+        from user.models import Score as UserScore
+        score = UserScore.query.get(score_id)
         db.session.delete(score)
         db.session.commit()
         return redirect(url_for('dashboard'))
 
     def topology(self):
+        if request.method == 'POST':
+            # Handle any POST data here if needed
+            data = request.get_json() if request.is_json else request.form
+            return jsonify({"status": "success"}), 200
+        # For GET requests, render the template
         return render_template('user/topology.html', title="topology")
 
     def troubleshoot(self):
+        if request.method == 'POST':
+            # Handle any POST data here if needed
+            data = request.get_json() if request.is_json else request.form
+            return jsonify({"status": "success"}), 200
+        # For GET requests, render the template
         return render_template('user/troubleshoot.html', title="troubleshoot")
 
     def crimp(self):
+        if request.method == 'POST':
+            # Handle any POST data here if needed
+            data = request.get_json() if request.is_json else request.form
+            return jsonify({"status": "success"}), 200
+        # For GET requests, render the template
         return render_template('user/crimping-simulation.html', title="crimp")

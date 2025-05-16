@@ -1,11 +1,15 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import os
+import sys
 
-# Initialize SQLAlchemy with no settings
-db = SQLAlchemy()
-login_manager = LoginManager()
+# Add parent directory to path so we can import from main app
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# Import db from main app to use a single SQLAlchemy instance
+from __init__ import db, login_manager
 
 # Import controllers after creating db to avoid circular imports
 def create_app(config=None):
@@ -34,8 +38,8 @@ def create_app(config=None):
     
     @login_manager.user_loader
     def load_user(user_id):
-        from admin.models.user import User
-        return User.query.get(int(user_id))
+        from admin.models.user import AdminUser
+        return AdminUser.query.get(int(user_id))
     
     # Register blueprints
     with app.app_context():

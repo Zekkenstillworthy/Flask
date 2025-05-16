@@ -80,9 +80,12 @@
             <img style="height: 150px; width: 150px;"         
             src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo">
             <h1>Sign In</h1>
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
             <input type="text" name="username" placeholder="Username" required autocomplete="off">
             <input type="password" name="password" placeholder="Password" required>
-            <input type="password" name="otp" placeholder="OTP" required>
+            <input type="text" name="otp" placeholder="OTP (if enabled)">
             <button type="submit">Sign In</button>
         </form>
     </div>

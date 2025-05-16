@@ -5,9 +5,10 @@ from datetime import datetime
 import pyotp
 import qrcode
 import os
-from ..app import db
-from ..models.user import User, Admin
-from ..models.score import Score
+from flask_login import login_required, current_user
+from __init__ import db  # Import db from main app
+from ..models.user import User as AdminUser, Admin  # Rename to avoid conflicts
+from ..models.score import AdminScore  # Use renamed model
 from ..models.essay_response import EssayResponse
 
 user_bp = Blueprint('user', __name__, url_prefix='/users')
@@ -15,13 +16,14 @@ user_bp = Blueprint('user', __name__, url_prefix='/users')
 class UserController:
     @staticmethod
     @user_bp.route('/')
+    @login_required
     def index():
         # Get regular users with their stats
-        users = User.query.all()
+        users = AdminUser.query.all()
         user_stats = []
         for user in users:
-            scores_count = Score.query.filter_by(user_id=user.id).count()
-            highest_score = db.session.query(func.max(Score.score)).filter_by(user_id=user.id).scalar() or 0
+            scores_count = AdminScore.query.filter_by(user_id=user.id).count()
+            highest_score = db.session.query(func.max(AdminScore.score)).filter_by(user_id=user.id).scalar() or 0
             
             user_stats.append({
                 'user': user,
@@ -39,8 +41,9 @@ class UserController:
 
     @staticmethod
     @user_bp.route('/edit/<int:user_id>', methods=['GET', 'POST'])
+    @login_required
     def edit_user(user_id):
-        user = User.query.get_or_404(user_id)
+        user = AdminUser.query.get_or_404(user_id)
         
         if request.method == 'POST':
             username = request.form.get('username')
@@ -71,17 +74,18 @@ class UserController:
 
     @staticmethod
     @user_bp.route('/delete/<int:user_id>', methods=['POST'])
+    @login_required
     def delete_user(user_id):
-        user = User.query.get_or_404(user_id)
+        user = AdminUser.query.get_or_404(user_id)
         
         # Check if the user is an admin and if they're the only admin
-        if user.is_admin and User.query.filter_by(is_admin=True).count() <= 1:
+        if user.is_admin and AdminUser.query.filter_by(is_admin=True).count() <= 1:
             flash('Cannot delete the only admin user in the system', 'error')
             return redirect(url_for('user.index'))
         
         try:
             # Delete related scores first
-            Score.query.filter_by(user_id=user.id).delete()
+            AdminScore.query.filter_by(user_id=user.id).delete()
             
             # Handle essay responses - either delete them or handle differently
             from admin.models.essay import EssayResponse
@@ -105,6 +109,7 @@ class UserController:
 
     @staticmethod
     @user_bp.route('/admins/edit/<int:admin_id>', methods=['GET', 'POST'])
+    @login_required
     def edit_admin(admin_id):
         admin = Admin.query.get_or_404(admin_id)
         
@@ -132,6 +137,7 @@ class UserController:
 
     @staticmethod
     @user_bp.route('/admins/delete/<int:admin_id>', methods=['POST'])
+    @login_required
     def delete_admin(admin_id):
         admin = Admin.query.get_or_404(admin_id)
         
@@ -152,6 +158,7 @@ class UserController:
 
     @staticmethod
     @user_bp.route('/admins/add', methods=['GET', 'POST'])
+    @login_required
     def add_admin():
         if request.method == 'POST':
             username = request.form.get('username')
@@ -200,14 +207,16 @@ class UserController:
 
     @staticmethod
     @user_bp.route('/reset-user-password/<int:user_id>', methods=['POST'])
+    @login_required
     def reset_user_password(user_id):
-        user = User.query.get_or_404(user_id)
+        user = AdminUser.query.get_or_404(user_id)
         # Logic to reset password - this would generate a random password or trigger a reset email
         flash(f'Password reset for {user.username}', 'success')
         return redirect(url_for('dashboard.index'))
 
     @staticmethod
     @user_bp.route('/add', methods=['POST'])
+    @login_required
     def add_user():
         """Add a regular user"""
         if request.method == 'POST':
@@ -222,14 +231,14 @@ class UserController:
                 return redirect(url_for('user.index'))
             
             # Check if username already exists
-            existing_user = User.query.filter_by(username=username).first()
+            existing_user = AdminUser.query.filter_by(username=username).first()
             if existing_user:
                 flash('Username already exists', 'error')
                 return redirect(url_for('user.index'))
             
             # Create new user
             try:
-                new_user = User(
+                new_user = AdminUser(
                     username=username,
                     email=email,
                     status=status,
@@ -250,9 +259,10 @@ class UserController:
 
     @staticmethod
     @user_bp.route('/generate_totp/<int:user_id>', methods=['POST'])
+    @login_required
     def generate_totp(user_id):
         """Generate a new TOTP key for a user"""
-        user = User.query.get_or_404(user_id)
+        user = AdminUser.query.get_or_404(user_id)
         
         # Generate a new random TOTP key
         key = pyotp.random_base32()
@@ -285,9 +295,10 @@ class UserController:
     
     @staticmethod
     @user_bp.route('/disable_totp/<int:user_id>', methods=['POST'])
+    @login_required
     def disable_totp(user_id):
         """Disable TOTP for a user"""
-        user = User.query.get_or_404(user_id)
+        user = AdminUser.query.get_or_404(user_id)
         
         # Remove TOTP key
         user.totp_key = None
@@ -305,9 +316,10 @@ class UserController:
         
     @staticmethod
     @user_bp.route('/get_totp_info/<int:user_id>')
+    @login_required
     def get_totp_info(user_id):
         """Get TOTP information for a user"""
-        user = User.query.get_or_404(user_id)
+        user = AdminUser.query.get_or_404(user_id)
         
         totp_data = {
             "has_totp": user.totp_key is not None,
@@ -323,6 +335,7 @@ class UserController:
 
     @staticmethod
     @user_bp.route('/essay-responses')
+    @login_required
     def user_essays():
         """Display users with option to view their essay responses"""
         # Get pagination parameters
@@ -330,7 +343,7 @@ class UserController:
         per_page = request.args.get('per_page', 10, type=int)
         
         # Get all users with pagination
-        users = User.query.paginate(page=page, per_page=per_page, error_out=False)
+        users = AdminUser.query.paginate(page=page, per_page=per_page, error_out=False)
         
         return render_template('admin/user_responses.html', 
                             users=users,
@@ -338,9 +351,10 @@ class UserController:
     
     @staticmethod
     @user_bp.route('/api/<int:user_id>/essays')
+    @login_required
     def get_user_essays(user_id):
         """API endpoint to get all essays for a specific user"""
-        user = User.query.get_or_404(user_id)
+        user = AdminUser.query.get_or_404(user_id)
         essays = EssayResponse.query.filter_by(user_id=user_id).order_by(EssayResponse.submission_date.desc()).all()
         
         # Format essay data for JSON response

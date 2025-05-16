@@ -1,22 +1,34 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from admin import db
+from __init__ import db
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 
-class User(db.Model, UserMixin):
+class AdminUser(db.Model, UserMixin):
+    """
+    Admin User model
+    """
     __tablename__ = 'user'
+    __table_args__ = {'extend_existing': True}  # Allow table to be redefined
     
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password_hash = db.Column(db.String(150), nullable=False)
-    email = db.Column(db.String(150), nullable=True)
-    totp_key = db.Column(db.String(32), nullable=True)
-    profile_img = db.Column(db.String(150), nullable=True)
-    is_admin = db.Column(db.Boolean, default=False)
-    status = db.Column(db.String(20), default='active')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_active = db.Column(db.DateTime, nullable=True)
+    id = Column(Integer, primary_key=True)
+    username = Column(String(150), unique=True, nullable=False)
+    password_hash = Column(String(150), nullable=False)
+    email = Column(String(150), nullable=True)
+    totp_key = Column(String(32), nullable=True)
+    profile_img = Column(String(150), nullable=True)
+    is_admin = Column(Boolean, default=False)
+    status = Column(String(20), default='active')
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_active = Column(DateTime, nullable=True)
+    
+    # Define the scores relationship from the User side
+    # Use a method to query scores to avoid circular imports
+    def get_scores(self):
+        """Get scores for this user"""
+        from admin.models.score import AdminScore
+        return AdminScore.query.filter_by(user_id=self.id).all()
     
     # Note: The enrolled_classes relationship is defined in the Class model via backref
     # We don't need to define it explicitly here

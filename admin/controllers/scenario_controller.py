@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from datetime import datetime
 from sqlalchemy import func, desc
+from flask_login import login_required, current_user
 
 # Import models
 from admin import db
@@ -10,6 +11,7 @@ from admin.models.scenario import Scenario
 scenario_bp = Blueprint('scenario', __name__, url_prefix='/scenarios')
 
 @scenario_bp.route('/')
+@login_required
 def index():
     """
     Display all scenarios
@@ -22,6 +24,7 @@ def index():
 
 # API Routes to match frontend expectations
 @scenario_bp.route('/api/list', methods=['GET'])
+@login_required
 def api_list_scenarios():
     """
     API endpoint to get all scenarios
@@ -31,6 +34,7 @@ def api_list_scenarios():
     return jsonify(scenarios)
 
 @scenario_bp.route('/api/create', methods=['POST'])
+@login_required
 def api_create_scenario():
     """
     API endpoint to create a new scenario
@@ -43,6 +47,7 @@ def api_create_scenario():
     return jsonify(result)
 
 @scenario_bp.route('/api/update/<int:scenario_id>', methods=['PUT'])
+@login_required
 def api_update_scenario(scenario_id):
     """
     API endpoint to update a scenario
@@ -55,6 +60,7 @@ def api_update_scenario(scenario_id):
     return jsonify(result)
 
 @scenario_bp.route('/api/delete/<int:scenario_id>', methods=['DELETE'])
+@login_required
 def api_delete_scenario(scenario_id):
     """
     API endpoint to delete a scenario
@@ -66,6 +72,7 @@ def api_delete_scenario(scenario_id):
     return jsonify(result)
 
 @scenario_bp.route('/create', methods=['GET', 'POST'])
+@login_required
 def create():
     """
     Create a new scenario
@@ -89,6 +96,7 @@ def create():
     return render_template('admin/scenario.html', active_page='scenarios')
 
 @scenario_bp.route('/edit/<int:scenario_id>', methods=['GET', 'POST'])
+@login_required
 def edit(scenario_id):
     """
     Edit an existing scenario
@@ -108,6 +116,7 @@ def edit(scenario_id):
                           scenario=scenario)
 
 @scenario_bp.route('/delete/<int:scenario_id>', methods=['POST'])
+@login_required
 def delete(scenario_id):
     """
     Delete a scenario

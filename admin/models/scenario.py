@@ -1,4 +1,4 @@
-from admin import db
+from __init__ import db
 from datetime import datetime
 
 class Scenario(db.Model):
@@ -6,6 +6,7 @@ class Scenario(db.Model):
     Model for network scenarios in the admin panel
     """
     __tablename__ = 'scenarios'
+    __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)

@@ -9,7 +9,7 @@ import random
 import string
 
 # Create a blueprint for class related routes
-class_controller = Blueprint('class_controller', __name__)
+class_controller = Blueprint('class_controller', __name__, url_prefix='/admin')
 
 @class_controller.route('/classes')
 @login_required
@@ -210,4 +210,91 @@ def generate_class_code():
                 
         return jsonify({"code": code})
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@class_controller.route('/student-classes')
+@login_required
+def student_classes():
+    """Display the student class enrollment management page"""
+    return render_template('admin/student_classes.html', active_page='student_classes')
+
+@class_controller.route('/api/student/classes', methods=['GET'])
+@login_required
+def get_student_classes():
+    """API endpoint to retrieve all classes that the current admin user can view"""
+    try:
+        # Get all classes from database
+        classes = Class.query.all()
+        
+        # Convert classes to dictionary format for JSON response
+        result = []
+        for cls in classes:
+            result.append({
+                'id': cls.id,
+                'name': cls.name,
+                'section': cls.section,
+                'code': cls.code,
+                'description': cls.description,
+                'startDate': cls.start_date.isoformat() if cls.start_date else None,
+                'endDate': cls.end_date.isoformat() if cls.end_date else None,
+                'status': cls.status,
+                'studentCount': len(cls.students),
+                'maxStudents': cls.max_students
+            })
+            
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@class_controller.route('/api/classes/<int:class_id>/students', methods=['GET'])
+@login_required
+def get_class_students(class_id):
+    """API endpoint to retrieve all students enrolled in a specific class"""
+    try:
+        cls = Class.query.get_or_404(class_id)
+        students = []
+        
+        for student in cls.students:
+            students.append({
+                'id': student.id,
+                'username': student.username,
+                'email': student.email if hasattr(student, 'email') else None,
+                # Join date and status would be in the association table, but we don't have direct access
+                # so returning placeholders
+                'joinDate': None,
+                'status': 'active'
+            })
+            
+        return jsonify({
+            'classId': cls.id,
+            'className': cls.name,
+            'students': students
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@class_controller.route('/api/classes/<int:class_id>/students/<int:student_id>', methods=['DELETE'])
+@login_required
+def remove_student_from_class(class_id, student_id):
+    """API endpoint to remove a student from a class"""
+    try:
+        cls = Class.query.get_or_404(class_id)
+        
+        # Find the student - assuming this is a User model
+        from user.models import User as UserModel  # Rename to avoid conflicts
+        student = UserModel.query.get_or_404(student_id)
+        
+        if student not in cls.students:
+            return jsonify({"error": "Student is not enrolled in this class"}), 400
+        
+        # Remove the student from the class
+        cls.students.remove(student)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": f"Student {student.username} removed from class successfully!"
+        })
+    except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500

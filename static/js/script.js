@@ -63,7 +63,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click handlers for smooth scrolling
     document.querySelectorAll('.navbar a').forEach(link => {
         link.addEventListener('click', function(e) {
-            if (link.getAttribute('href') === '/logout') return; // Don't prevent default for logout
+            const href = link.getAttribute('href');
+            
+            // Skip for external page navigation links (starting with '/')
+            if (href === '/logout' || (href.startsWith('/') && href !== '#')) {
+                return; // Don't prevent default for page navigation links
+            }
 
             e.preventDefault();
             
@@ -74,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     behavior: 'smooth'
                 });
             } else {
+                // Only try to find elements for anchor links (starting with #)
                 const targetSection = document.querySelector(targetId);
                 if (targetSection) {
                     targetSection.scrollIntoView({
@@ -82,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Update active state immediately on click
+            // Only update active state for anchor links (not page navigation)
             document.querySelectorAll('.navbar a').forEach(l => l.classList.remove('active'));
             this.classList.add('active');
         });
@@ -139,16 +145,24 @@ document.addEventListener('DOMContentLoaded', function() {
     async function fetchQuestions(category = 'riddle') {
         try {
             console.log(`Attempting to fetch ${category} questions from database...`);
-            const response = await fetch(`/api/questions?category=${category}`);
             
+            // Try the main API endpoint first
+            let response = await fetch(`/api/questions?category=${category}`);
+            
+            // If that fails, try the direct QuizController endpoint
             if (!response.ok) {
-                throw new Error(`Failed to fetch questions: ${response.status} ${response.statusText}`);
+                console.warn(`Main API endpoint failed with ${response.status}, trying alternate endpoint...`);
+                response = await fetch(`/questions?category=${category}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch questions from all endpoints: ${response.status} ${response.statusText}`);
+                }
             }
             
             const data = await response.json();
             questions = data;
             
-            console.log(`Successfully loaded ${questions.length} ${category} questions from database`);
+            console.log(`Successfully loaded ${questions.length} questions from database`);
             console.log('First question:', questions.length > 0 ? questions[0] : 'No questions found');
             
             return questions.length > 0;
@@ -1562,7 +1576,9 @@ document.addEventListener('DOMContentLoaded', function() {
             timestamp: new Date().toISOString()
         };
         
-        // Send the essay to the server
+        // Send the essay to the server through the API endpoint
+        console.log("Attempting to submit essay to /save_essay (direct endpoint)...");
+        // Try the direct endpoint first since we know QuizController is properly registered
         fetch('/save_essay', {
             method: 'POST',
             headers: {
@@ -1570,7 +1586,28 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(essayResponse)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                console.warn(`Direct endpoint failed with ${response.status}, trying API endpoint...`);
+                // Try the API endpoint as a fallback
+                console.log("Falling back to /api/save_essay...");
+                return fetch('/api/save_essay', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(essayResponse)
+                });
+            }
+            return response;
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error(`HTTP error! Status: ${response.status}`);
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'success') {
                 console.log('Essay submitted successfully');

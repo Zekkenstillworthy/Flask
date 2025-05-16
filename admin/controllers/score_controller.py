@@ -3,29 +3,31 @@ import csv
 from io import StringIO
 from datetime import datetime
 from sqlalchemy import func
+from flask_login import login_required, current_user
 from ..app import db
-from ..models.score import Score
-from ..models.user import User
+from ..models.score import AdminScore  # Updated to use renamed model
+from ..models.user import User as AdminUser  # Rename to avoid conflicts
 
 score_bp = Blueprint('score', __name__, url_prefix='/scores')
 
 class ScoreController:
     @staticmethod
     @score_bp.route('/')
+    @login_required
     def index():
-        scores = Score.query.order_by(Score.date_attempted.desc()).all()
+        scores = AdminScore.query.order_by(AdminScore.date_attempted.desc()).all()
         
         # Fetch users for the user list view
-        users = User.query.all()
+        users = AdminUser.query.all()
         
         category_stats = (
             db.session.query(
-                Score.category, 
-                func.count(Score.id).label('count'),
-                func.avg(Score.score).label('avg_score'),
-                func.max(Score.score).label('max_score')
+                AdminScore.category, 
+                func.count(AdminScore.id).label('count'),
+                func.avg(AdminScore.score).label('avg_score'),
+                func.max(AdminScore.score).label('max_score')
             )
-            .group_by(Score.category)
+            .group_by(AdminScore.category)
             .all()
         )
         
@@ -39,14 +41,15 @@ class ScoreController:
 
     @staticmethod
     @score_bp.route('/reset', methods=['POST'])
+    @login_required
     def reset_scores():
         category = request.form.get('category')
         
         try:
             if category:
-                Score.query.filter_by(category=category).delete()
+                AdminScore.query.filter_by(category=category).delete()
             else:
-                Score.query.delete()
+                AdminScore.query.delete()
             
             db.session.commit()
             flash('Scores reset successfully', 'success')
@@ -58,9 +61,10 @@ class ScoreController:
 
     @staticmethod
     @score_bp.route('/delete/<int:score_id>', methods=['POST'])
+    @login_required
     def delete_score(score_id):
         try:
-            score = Score.query.get_or_404(score_id)
+            score = AdminScore.query.get_or_404(score_id)
             db.session.delete(score)
             db.session.commit()
             flash('Score deleted successfully', 'success')
@@ -72,9 +76,10 @@ class ScoreController:
 
     @staticmethod
     @score_bp.route('/export')
+    @login_required
     def export_scores():
         try:
-            scores = Score.query.order_by(Score.date_attempted.desc()).all()
+            scores = AdminScore.query.order_by(AdminScore.date_attempted.desc()).all()
             
             # Create a CSV string
             output = StringIO()
@@ -103,9 +108,10 @@ class ScoreController:
 
     @staticmethod
     @score_bp.route('/user/<int:user_id>', methods=['GET'])
+    @login_required
     def user_scores(user_id):
         # Fetch all scores for a specific user
-        user_scores = Score.query.filter_by(user_id=user_id).order_by(Score.date_attempted.desc()).all()
+        user_scores = AdminScore.query.filter_by(user_id=user_id).order_by(AdminScore.date_attempted.desc()).all()
         
         # Format the scores for JSON response
         scores_data = []

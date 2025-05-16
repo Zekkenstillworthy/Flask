@@ -65,8 +65,250 @@
     transform: translateX(0);
   }
 
-  .profile-section input::placeholder {
-    color: #fff; /* Change placeholder color to white */
+  .profile-section input::placeholder,
+  .classes-section input::placeholder {
+    color: #fff; 
+  }
+
+  /* Classes section styling */
+  .classes-section {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    width: 800px;
+    max-height: 85vh;
+    background-color: rgba(15, 15, 15, 0.95);
+    border: 2px solid #00C3B5;
+    z-index: 1001;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    display: none;
+    overflow-y: auto;
+    will-change: opacity;
+  }
+
+  .classes-section.active {
+    display: block;
+    animation: classesPopupFadeIn 0.3s ease-out forwards;
+  }
+  
+  @keyframes classesPopupFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .classes-content {
+    padding: 2rem;
+    position: relative;
+  }
+
+  .classes-exit-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #fff;
+    transition: 0.3s;
+  }
+
+  .classes-exit-btn:hover {
+    color: #00C3B5;
+  }
+
+  .join-class-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .enrolled-classes-section {
+    margin-top: 2rem;
+  }
+
+  /* Class cards */
+  .classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .class-card {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .class-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .class-header {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .class-name {
+    font-size: 1.1rem;
+    margin: 0;
+    color: #00C3B5;
+  }
+
+  .class-section {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 0.25rem;
+  }
+
+  .class-body {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .class-description {
+    margin-bottom: 1rem;
+    flex-grow: 1;
+    font-size: 0.9rem;
+  }
+
+  .class-meta {
+    color: #888;
+    font-size: 0.8rem;
+  }
+
+  .class-footer {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    text-align: center;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: #00C3B5;
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: #00a19a;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid #00C3B5;
+    color: #00C3B5;
+  }
+
+  .btn-outline:hover {
+    background: rgba(0, 195, 181, 0.1);
+  }
+
+  /* Form elements */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #ddd;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    transition: border-color 0.3s;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: #00C3B5;
+  }
+
+  .alert {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    display: none;
+  }
+
+  .alert-error {
+    background-color: rgba(231, 76, 60, 0.2);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+  }
+
+  .alert-success {
+    background-color: rgba(46, 204, 113, 0.2);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+  }
+
+  .spinner {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 195, 181, 0.3);
+    border-radius: 50%;
+    border-top-color: #00C3B5;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: translateY(-50%) rotate(360deg); }
+  }
+
+  .no-classes {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: rgba(32, 32, 32, 0.6);
+    border-radius: 8px;
+  }
+
+  .empty-state-icon {
+    font-size: 3rem;
+    color: #555;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state-text {
+    font-size: 1rem;
+    color: #aaa;
+    max-width: 400px;
+    margin: 0 auto;
   }
 
 .quiz-section{
@@ -87,10 +329,12 @@
 }
 </style>
 
+<script src="{{ url_for('static', filename='js/navigation.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/classes-popup.js') }}" defer></script>
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/dashboard.css') }}"
+  href="{{ url_for('static', filename='css/user/dashboard.css') }}"
 />
 <link
   href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
@@ -124,6 +368,7 @@
     <a href="#dashboard" id="dashboard-link" class="active">Dashboard</a>
     <a href="#leaderboard" id="leaderboard-link">Leaderboard</a>
     <a href="#about-us" id="about-us-link">About Us</a>
+    <a href="#" id="classes-link">My Classes</a>
     <a href="{{ url_for('user.logout') }}">Log out</a>
   </nav>
 </header>
@@ -361,6 +606,46 @@
   </div>
 </section>
 
+<!-- Classes Section -->
+<section id="classes-popup" class="classes-section hidden">
+  <div class="classes-content">
+    <i class="bx bx-x classes-exit-btn"></i>
+    <h3>My Classes</h3>
+    
+    <!-- Join Class Form -->
+    <div class="join-class-section">
+      <h4>Join a Class</h4>
+      <form id="join-class-form">
+        <div id="error-alert" class="alert alert-error"></div>
+        <div id="success-alert" class="alert alert-success"></div>
+        
+        <div class="form-group">
+          <label for="class-code" class="form-label">Class Code:</label>
+          <div style="position: relative;">
+            <input type="text" id="class-code" class="form-control" maxlength="6" placeholder="Enter 6-character code" required>
+            <div class="spinner" id="join-spinner"></div>
+          </div>
+          <small style="color: #aaa; margin-top: 0.5rem; display: block;">Ask your instructor for the class code</small>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Join Class</button>
+      </form>
+    </div>
+    
+    <!-- My Classes Section -->
+    <div class="enrolled-classes-section">
+      <h4>Enrolled Classes</h4>
+      <div id="classes-container">
+        <!-- Classes will be loaded here -->
+        <div class="loading" style="text-align: center; padding: 1rem;">
+          <div class="spinner" style="display: inline-block; width: 30px; height: 30px;"></div>
+          <p>Loading your classes...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Scores Section -->
 <section id="leaderboard"class="scores-section">
   <div class="scores-container">
@@ -410,6 +695,9 @@
     </button>
     <button class="choice-btn" onclick="goToCrimp()">
       UTP Cable Crimping 
+    </button>
+    <button class="choice-btn" id="choice-classes-btn">
+      Join Classes
     </button>
   </div>
   
@@ -478,6 +766,10 @@
 
   function goToCrimp() {
     location.href = "{{ url_for('user.crimp') }}";
+  }
+
+  function goToClasses() {
+    location.href = "{{ url_for('user.classes') }}";
   }
 
   function previewImage(event) {
@@ -648,6 +940,41 @@
     <audio id="correctSound" src="{{ url_for('static', filename='audio/Correct.mp3') }}"></audio>
     <audio id="incorrectSound" src="{{ url_for('static', filename='audio/Incorrect.mp3') }}"></audio>
     <audio id="bgSound" src="{{ url_for('static', filename='audio/Bg_sound.mp3') }}"></audio>
+
+<!-- Class Item Template -->
+<template id="class-template">
+  <div class="class-card">
+    <div class="class-header">
+      <h3 class="class-name"></h3>
+      <div class="class-section"></div>
+    </div>
+    <div class="class-body">
+      <div class="class-description"></div>
+      <div class="class-meta">
+        <div class="class-dates">
+          <span class="start-date"></span>
+          <span class="end-date"></span>
+        </div>
+        <div class="class-stats">
+          <span class="student-count"></span>
+        </div>
+      </div>
+    </div>
+    <div class="class-footer">
+      <a href="#" class="btn btn-primary view-class-btn">View Details</a>
+      <button class="btn btn-outline leave-class-btn">Leave Class</button>
+    </div>
+  </div>
+</template>
+
+<!-- Empty State Template -->
+<template id="empty-state-template">
+  <div class="no-classes">
+    <i class="fas fa-book-open empty-state-icon"></i>
+    <h3>No Classes Found</h3>
+    <p class="empty-state-text">You haven't joined any classes yet. Use the form above to join a class with a code from your instructor.</p>
+  </div>
+</template>
 
 {% if message %}
 <script>

@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import login_required, current_user
 from ..app import db
 from ..models.question_group import QuestionGroup
 from ..models.question import Question
@@ -8,16 +9,18 @@ question_group_bp = Blueprint('question_group', __name__, url_prefix='/groups')
 class QuestionGroupController:
     @staticmethod
     @question_group_bp.route('/')
+    @login_required
     def index():
         groups = QuestionGroup.query.order_by(QuestionGroup.name).all()
         return render_template(
-            'admin/question_groups.html',
+            'admin/questions.html',
             groups=groups,
-            active_page='question_groups'
+            active_page='questions'
         )
     
     @staticmethod
     @question_group_bp.route('/add', methods=['GET', 'POST'])
+    @login_required
     def add_group():
         if request.method == 'POST':
             name = request.form.get('name')
@@ -45,6 +48,7 @@ class QuestionGroupController:
     
     @staticmethod
     @question_group_bp.route('/edit/<int:group_id>', methods=['GET', 'POST'])
+    @login_required
     def edit_group(group_id):
         group = QuestionGroup.query.get_or_404(group_id)
         
@@ -71,6 +75,7 @@ class QuestionGroupController:
     
     @staticmethod
     @question_group_bp.route('/delete/<int:group_id>', methods=['POST'])
+    @login_required
     def delete_group(group_id):
         group = QuestionGroup.query.get_or_404(group_id)
         
@@ -86,6 +91,7 @@ class QuestionGroupController:
     
     @staticmethod
     @question_group_bp.route('/<int:group_id>')
+    @login_required
     def view_group(group_id):
         group = QuestionGroup.query.get_or_404(group_id)
         
@@ -107,6 +113,7 @@ class QuestionGroupController:
     
     @staticmethod
     @question_group_bp.route('/<int:group_id>/add_questions', methods=['GET', 'POST'])
+    @login_required
     def add_questions_to_group(group_id):
         group = QuestionGroup.query.get_or_404(group_id)
         
@@ -154,6 +161,7 @@ class QuestionGroupController:
     
     @staticmethod
     @question_group_bp.route('/<int:group_id>/remove_question/<int:question_id>', methods=['POST'])
+    @login_required
     def remove_question_from_group(group_id, question_id):
         group = QuestionGroup.query.get_or_404(group_id)
         question = Question.query.get_or_404(question_id)

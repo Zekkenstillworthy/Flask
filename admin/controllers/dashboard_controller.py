@@ -2,11 +2,12 @@ from flask import Blueprint, render_template, redirect, url_for, flash, jsonify,
 from datetime import datetime, timedelta
 from sqlalchemy import func, desc, and_, extract, or_
 import json
+from flask_login import login_required, current_user
 
 # Import models
 from admin import db  # Add this import for db
-from admin.models.user import User
-from admin.models.score import Score
+from admin.models.user import AdminUser
+from admin.models.score import AdminScore  # Updated to use renamed model
 from admin.models.question import Question
 from admin.models.essay_response import EssayResponse
 from admin.models.activity_log import ActivityLog
@@ -15,26 +16,27 @@ from admin.models.activity_log import ActivityLog
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/admin')
 
 @dashboard_bp.route('/')
+@login_required
 def index():
     # Get basic stats - ensure we're using the correct tables
-    total_users = User.query.count()
-    total_scores = Score.query.count()
+    total_users = AdminUser.query.count()
+    total_scores = AdminScore.query.count()
     
     # Handle case where questions might be in either question or questions table
     # We'll detect which one has data and use it
     question_count_main = Question.query.count()
     
     # Get recent scores for dashboard table
-    recent_scores = Score.query.order_by(desc(Score.date_attempted)).limit(10).all()
+    recent_scores = AdminScore.query.order_by(desc(AdminScore.date_attempted)).limit(10).all()
     
     # Score distribution data for chart - adjusted based on actual score data
     # Your score data has scores like 1.5, 2, 0.75, 2.5 which seem to be out of 3
     score_dist = {
-        'very_low': Score.query.filter(Score.score < 0.6).count(),  # Less than 20%
-        'low': Score.query.filter(and_(Score.score >= 0.6, Score.score < 1.2)).count(),  # 20-40%
-        'medium': Score.query.filter(and_(Score.score >= 1.2, Score.score < 1.8)).count(),  # 40-60%
-        'high': Score.query.filter(and_(Score.score >= 1.8, Score.score < 2.4)).count(),  # 60-80%
-        'very_high': Score.query.filter(Score.score >= 2.4).count()  # 80%+
+        'very_low': AdminScore.query.filter(AdminScore.score < 0.6).count(),  # Less than 20%
+        'low': AdminScore.query.filter(and_(AdminScore.score >= 0.6, AdminScore.score < 1.2)).count(),  # 20-40%
+        'medium': AdminScore.query.filter(and_(AdminScore.score >= 1.2, AdminScore.score < 1.8)).count(),  # 40-60%
+        'high': AdminScore.query.filter(and_(AdminScore.score >= 1.8, AdminScore.score < 2.4)).count(),  # 60-80%
+        'very_high': AdminScore.query.filter(AdminScore.score >= 2.4).count()  # 80%+
     }
     
     # User activity data - last 7 days
@@ -45,9 +47,9 @@ def index():
     active_users = []
     for date_str in activity_dates:
         date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-        count = Score.query.filter(
-            func.date(Score.date_attempted) == date_obj
-        ).with_entities(Score.user_id).distinct().count()
+        count = AdminScore.query.filter(
+            func.date(AdminScore.date_attempted) == date_obj
+        ).with_entities(AdminScore.user_id).distinct().count()
         active_users.append(count)
     
     # Average scores by category
@@ -56,7 +58,7 @@ def index():
     
     for cat in categories:
         # Calculate average as percentage of 3 (max score based on your data)
-        avg = Score.query.filter(Score.category == cat).with_entities(func.avg(Score.score)).scalar() or 0
+        avg = AdminScore.query.filter(AdminScore.category == cat).with_entities(func.avg(AdminScore.score)).scalar() or 0
         category_avg[cat] = round(float(avg) * 100 / 3, 1)  # Convert to percentage based on max score of 3
     
     # Question difficulty distribution
@@ -141,6 +143,7 @@ def index():
                            active_page='dashboard')
 
 @dashboard_bp.route('/api/chart-data')
+@login_required
 def chart_data():
     """API endpoint to get filtered chart data"""
     date_range = request.args.get('date_range', '7')  # Default to 7 days
@@ -155,19 +158,19 @@ def chart_data():
             start_date = datetime(2000, 1, 1)  # Very old date to include all
         
         # Base query with date filter
-        query = Score.query.filter(Score.date_attempted >= start_date)
+        query = AdminScore.query.filter(AdminScore.date_attempted >= start_date)
         
         # Add category filter if specified
         if category != 'all':
-            query = query.filter(Score.category == category)
+            query = query.filter(AdminScore.category == category)
         
         # Score distribution data - adjusted for actual score data
         score_dist = {
-            'very_low': query.filter(Score.score < 0.6).count(),
-            'low': query.filter(and_(Score.score >= 0.6, Score.score < 1.2)).count(),
-            'medium': query.filter(and_(Score.score >= 1.2, Score.score < 1.8)).count(),
-            'high': query.filter(and_(Score.score >= 1.8, Score.score < 2.4)).count(),
-            'very_high': query.filter(Score.score >= 2.4).count()
+            'very_low': query.filter(AdminScore.score < 0.6).count(),
+            'low': query.filter(and_(AdminScore.score >= 0.6, AdminScore.score < 1.2)).count(),
+            'medium': query.filter(and_(AdminScore.score >= 1.2, AdminScore.score < 1.8)).count(),
+            'high': query.filter(and_(AdminScore.score >= 1.8, AdminScore.score < 2.4)).count(),
+            'very_high': query.filter(AdminScore.score >= 2.4).count()
         }
         
         # Generate dates for the activity chart
@@ -176,7 +179,7 @@ def chart_data():
             # For 'all', group by months
             # This would need more complex SQL based on your DB
             activity_dates = ["All time"]
-            active_users = [query.with_entities(Score.user_id).distinct().count()]
+            active_users = [query.with_entities(AdminScore.user_id).distinct().count()]
         else:
             # For specific ranges, show daily data
             activity_dates = [(today - timedelta(days=i)).strftime('%Y-%m-%d') 
@@ -187,8 +190,8 @@ def chart_data():
             for date_str in activity_dates:
                 date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
                 count = query.filter(
-                    func.date(Score.date_attempted) == date_obj
-                ).with_entities(Score.user_id).distinct().count()
+                    func.date(AdminScore.date_attempted) == date_obj
+                ).with_entities(AdminScore.user_id).distinct().count()
                 active_users.append(count)
         
         # Category averages - adjusted for max score of 3
@@ -196,11 +199,11 @@ def chart_data():
         if category == 'all':
             categories = ['riddle', 'topology', 'troubleshoot', 'crimping']
             for cat in categories:
-                cat_query = query.filter(Score.category == cat)
-                avg = cat_query.with_entities(func.avg(Score.score)).scalar() or 0
+                cat_query = query.filter(AdminScore.category == cat)
+                avg = cat_query.with_entities(func.avg(AdminScore.score)).scalar() or 0
                 category_avg[cat] = round(float(avg) * 100 / 3, 1)  # Use max score of 3
         else:
-            avg = query.with_entities(func.avg(Score.score)).scalar() or 0
+            avg = query.with_entities(func.avg(AdminScore.score)).scalar() or 0
             category_avg[category] = round(float(avg) * 100 / 3, 1)  # Use max score of 3
         
         return jsonify({
@@ -219,13 +222,14 @@ def chart_data():
 
 # Add route for user management
 @dashboard_bp.route('/user-management')
+@login_required
 def user_management():
     # Get regular users with their stats
-    users = User.query.all()
+    users = AdminUser.query.all()
     user_stats = []
     for user in users:
-        scores_count = Score.query.filter_by(user_id=user.id).count()
-        highest_score = db.session.query(func.max(Score.score)).filter_by(user_id=user.id).scalar() or 0
+        scores_count = AdminScore.query.filter_by(user_id=user.id).count()
+        highest_score = db.session.query(func.max(AdminScore.score)).filter_by(user_id=user.id).scalar() or 0
         
         user_stats.append({
             'user': user,
@@ -244,14 +248,15 @@ def user_management():
 
 # Add route for data export
 @dashboard_bp.route('/export-data')
+@login_required
 def export_data():
     export_type = request.args.get('type', 'scores')
     format_type = request.args.get('format', 'json')
     
     if export_type == 'scores':
-        data = Score.query.all()
+        data = AdminScore.query.all()
     elif export_type == 'users':
-        data = User.query.all()
+        data = AdminUser.query.all()
     elif export_type == 'questions':
         data = Question.query.all()
     else:

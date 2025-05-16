@@ -1,0 +1,506 @@
+{% extends 'user/base.html' %} 
+{% block head %}
+<title>My Classes | RiddleNet</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body {
+    color: #fff;
+    background: #111;
+  }
+  
+  .classes-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #FFC107;
+    text-align: center;
+  }
+  
+  .classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  
+  .class-card {
+    background: rgba(32, 32, 32, 0.9);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .class-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+  }
+  
+  .class-header {
+    padding: 1.25rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .class-name {
+    font-size: 1.25rem;
+    margin: 0;
+    color: #FFC107;
+  }
+  
+  .class-section {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-top: 0.25rem;
+  }
+  
+  .class-body {
+    padding: 1.25rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .class-description {
+    margin-bottom: 1rem;
+    flex-grow: 1;
+  }
+  
+  .class-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #999;
+    font-size: 0.85rem;
+    margin-top: auto;
+  }
+  
+  .class-dates span {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  .class-stats {
+    text-align: right;
+  }
+  
+  .class-footer {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0069d9;
+  }
+  
+  .btn-outline {
+    background-color: transparent;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+  }
+  
+  .btn-outline:hover {
+    background-color: rgba(231, 76, 60, 0.1);
+  }
+  
+  /* Join class form */
+  .join-class-section {
+    background: rgba(32, 32, 32, 0.9);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    transition: border-color 0.3s;
+  }
+  
+  .form-control:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  
+  .alert {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    display: none;
+  }
+  
+  .alert-error {
+    background-color: rgba(231, 76, 60, 0.2);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+  }
+  
+  .alert-success {
+    background-color: rgba(46, 204, 113, 0.2);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+  }
+  
+  .no-classes {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: rgba(32, 32, 32, 0.6);
+    border-radius: 8px;
+  }
+  
+  .empty-state-icon {
+    font-size: 4rem;
+    color: #555;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-state-text {
+    font-size: 1.2rem;
+    color: #aaa;
+    max-width: 400px;
+    margin: 0 auto 1.5rem;
+  }
+  
+  /* Loading spinner */
+  .spinner {
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+    display: none;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .classes-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .classes-container {
+      padding: 1rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="classes-container">
+  <h1 class="section-title">My Classes</h1>
+  
+  <!-- Join Class Form Section -->
+  <section class="join-class-section">
+    <h2>Join a Class</h2>
+    <p>Enter a 6-character class code to join a new class</p>
+    
+    <div class="alert alert-error" id="error-alert"></div>
+    <div class="alert alert-success" id="success-alert"></div>
+    
+    <form id="join-class-form">
+      <div class="form-group">
+        <label for="class-code" class="form-label">Class Code</label>
+        <div style="display: flex; align-items: center;">
+          <input type="text" id="class-code" class="form-control" maxlength="6" placeholder="Enter 6-character code" required>
+          <div class="spinner" id="join-spinner"></div>
+        </div>
+        <small style="color: #aaa; margin-top: 0.5rem; display: block;">Ask your instructor for the class code</small>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Join Class</button>
+    </form>
+  </section>
+  
+  <!-- My Classes Section -->
+  <section>
+    <h2 class="section-title">Enrolled Classes</h2>
+    
+    <div id="classes-container">
+      <!-- Classes will be loaded here -->
+      <div class="loading" style="text-align: center; padding: 3rem;">
+        <div class="spinner" style="display: inline-block; width: 30px; height: 30px;"></div>
+        <p>Loading your classes...</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Class Item Template -->
+<template id="class-template">
+  <div class="class-card">
+    <div class="class-header">
+      <h3 class="class-name"></h3>
+      <div class="class-section"></div>
+    </div>
+    <div class="class-body">
+      <div class="class-description"></div>
+      <div class="class-meta">
+        <div class="class-dates">
+          <span class="start-date"></span>
+          <span class="end-date"></span>
+        </div>
+        <div class="class-stats">
+          <span class="student-count"></span>
+        </div>
+      </div>
+    </div>
+    <div class="class-footer">
+      <a href="#" class="btn btn-primary view-class-btn">View Details</a>
+      <button class="btn btn-outline leave-class-btn">Leave Class</button>
+    </div>
+  </div>
+</template>
+
+<!-- Empty State Template -->
+<template id="empty-state-template">
+  <div class="no-classes">
+    <i class="fas fa-book-open empty-state-icon"></i>
+    <h3>No Classes Found</h3>
+    <p class="empty-state-text">You haven't joined any classes yet. Use the form above to join a class with a code from your instructor.</p>
+  </div>
+</template>
+
+<script src="{{ url_for('static', filename='js/navigation.js') }}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // DOM elements
+  const joinClassForm = document.getElementById('join-class-form');
+  const classCodeInput = document.getElementById('class-code');
+  const errorAlert = document.getElementById('error-alert');
+  const successAlert = document.getElementById('success-alert');
+  const joinSpinner = document.getElementById('join-spinner');
+  const classesContainer = document.getElementById('classes-container');
+  const classTemplate = document.getElementById('class-template');
+  const emptyStateTemplate = document.getElementById('empty-state-template');
+  
+  // Load enrolled classes
+  loadEnrolledClasses();
+  
+  // Join class form submission
+  if (joinClassForm) {
+    joinClassForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const classCode = classCodeInput.value.trim();
+      
+      // Validate code format
+      if (!classCode || classCode.length !== 6) {
+        showError('Please enter a valid 6-character class code');
+        return;
+      }
+      
+      // Hide any previous alerts
+      hideAlerts();
+      
+      // Show spinner
+      joinSpinner.style.display = 'inline-block';
+      
+      // API call to join the class
+      fetch('/api/join-class', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code: classCode })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Hide spinner
+        joinSpinner.style.display = 'none';
+        
+        if (data.status === 'error') {
+          showError(data.message);
+        } else {
+          showSuccess(data.message);
+          classCodeInput.value = '';
+          
+          // Reload the enrolled classes
+          loadEnrolledClasses();
+        }
+      })
+      .catch(error => {
+        joinSpinner.style.display = 'none';
+        showError('An error occurred. Please try again.');
+        console.error('Error:', error);
+      });
+    });
+  }
+  
+  // Function to load enrolled classes
+  function loadEnrolledClasses() {
+    classesContainer.innerHTML = `
+      <div class="loading" style="text-align: center; padding: 3rem;">
+        <div class="spinner" style="display: inline-block; width: 30px; height: 30px;"></div>
+        <p>Loading your classes...</p>
+      </div>
+    `;
+    
+    fetch('/api/classes')
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'error') {
+          classesContainer.innerHTML = `<p class="error">${data.message}</p>`;
+          return;
+        }
+        
+        if (!data.classes || data.classes.length === 0) {
+          // Show empty state
+          classesContainer.innerHTML = '';
+          const emptyState = document.importNode(emptyStateTemplate.content, true);
+          classesContainer.appendChild(emptyState);
+          return;
+        }
+        
+        // Create class grid
+        const classesGrid = document.createElement('div');
+        classesGrid.className = 'classes-grid';
+        
+        // Add each class
+        data.classes.forEach(classItem => {
+          const classCard = document.importNode(classTemplate.content, true);
+          
+          // Fill in class details
+          classCard.querySelector('.class-name').textContent = classItem.name;
+          classCard.querySelector('.class-section').textContent = classItem.section || '';
+          classCard.querySelector('.class-description').textContent = classItem.description || 'No description available';
+          classCard.querySelector('.start-date').textContent = `Start: ${formatDate(classItem.startDate)}`;
+          classCard.querySelector('.end-date').textContent = `End: ${formatDate(classItem.endDate)}`;
+          classCard.querySelector('.student-count').textContent = `Students: ${classItem.studentCount || 0}`;
+          
+          // Set up buttons
+          const viewBtn = classCard.querySelector('.view-class-btn');
+          viewBtn.href = `/user/class/${classItem.id}`;
+          
+          const leaveBtn = classCard.querySelector('.leave-class-btn');
+          leaveBtn.setAttribute('data-class-id', classItem.id);
+          leaveBtn.setAttribute('data-class-name', classItem.name);
+          
+          // Add to grid
+          classesGrid.appendChild(classCard);
+        });
+        
+        // Replace loading with class grid
+        classesContainer.innerHTML = '';
+        classesContainer.appendChild(classesGrid);
+        
+        // Add event listeners for leave buttons
+        document.querySelectorAll('.leave-class-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const classId = this.getAttribute('data-class-id');
+            const className = this.getAttribute('data-class-name');
+            
+            if (confirm(`Are you sure you want to leave ${className}? This action cannot be undone.`)) {
+              leaveClass(classId);
+            }
+          });
+        });
+      })
+      .catch(error => {
+        classesContainer.innerHTML = `<p class="error">Failed to load classes. Please try again later.</p>`;
+        console.error('Error:', error);
+      });
+  }
+  
+  // Function to leave a class
+  function leaveClass(classId) {
+    fetch(`/api/leave-class/${classId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'error') {
+        showError(data.message);
+      } else {
+        showSuccess(data.message);
+        
+        // Reload the enrolled classes
+        loadEnrolledClasses();
+      }
+    })
+    .catch(error => {
+      showError('An error occurred. Please try again.');
+      console.error('Error:', error);
+    });
+  }
+  
+  // Helper functions
+  function showError(message) {
+    errorAlert.textContent = message;
+    errorAlert.style.display = 'block';
+    successAlert.style.display = 'none';
+  }
+  
+  function showSuccess(message) {
+    successAlert.textContent = message;
+    successAlert.style.display = 'block';
+    errorAlert.style.display = 'none';
+  }
+  
+  function hideAlerts() {
+    errorAlert.style.display = 'none';
+    successAlert.style.display = 'none';
+  }
+  
+  function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+});
+</script>
+{% endblock %}

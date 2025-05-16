@@ -1,8 +1,9 @@
 import json
-from admin import db
+from __init__ import db
 
 class Question(db.Model):
     __tablename__ = 'question'
+    __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
     numb = db.Column(db.Integer, nullable=False)

@@ -2,13 +2,15 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, Float, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
-from admin import db
+# Use the main app's db
+from __init__ import db
 
 class EssayResponse(db.Model):
     """
     Model for storing user essay responses to essay questions
     """
     __tablename__ = 'essay_response'
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)

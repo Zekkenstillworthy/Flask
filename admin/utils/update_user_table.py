@@ -1,5 +1,5 @@
 from admin import db
-from admin.models.user import User
+from admin.models.user import AdminUser
 from datetime import datetime
 import sqlalchemy as sa
 from sqlalchemy.exc import OperationalError
